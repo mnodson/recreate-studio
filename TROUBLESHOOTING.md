@@ -64,6 +64,11 @@ git push origin main
 - Ensure Node.js version compatibility
 - Verify all dependencies are in package.json
 
+#### "Browser" Folder Issue (Fixed)
+- **Problem**: Angular builds to `dist/project-name/browser/` 
+- **Solution**: GitHub Actions uploads from `./dist/recreate-studio-website/browser`
+- **Result**: GitHub Pages gets files in the correct root structure
+
 #### Images Not Loading
 - All image paths start with `/images/` ✅
 - Images are in `public/images/` directory ✅
