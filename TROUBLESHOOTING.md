@@ -72,12 +72,17 @@ git push origin main
 #### Asset Path Issue (Fixed)
 - **Problem**: Assets (JS, CSS, images) requested from root instead of subdirectory
 - **Solution**: Added `--deploy-url /recreate-studio/` to build command
-- **Result**: All assets now correctly prefixed with repository path
+- **Result**: All bundled assets now correctly prefixed with repository path
 
-#### Images Not Loading
-- All image paths start with `/images/` ✅
-- Images are in `public/images/` directory ✅
-- Build process includes assets ✅
+#### Component Image Paths (Fixed)
+- **Problem**: Images in components used absolute paths (`/images/`) bypassing base href
+- **Solution**: Changed to relative paths (`images/`) in component templates
+- **Result**: Images now respect base href and load from correct subdirectory
+
+#### Images Not Loading (All Fixed)
+- ✅ Image paths changed to relative (`images/`) to respect base href
+- ✅ Images are in `public/images/` directory 
+- ✅ Build process includes assets with correct prefixes
 
 #### Custom Domain Issues
 - Add CNAME file to `public/` directory

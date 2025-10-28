@@ -11,7 +11,7 @@ import { RouterLink } from '@angular/router';
       <section class="hero">
         <div class="hero-content">
           <div class="hero-logo">
-            <img src="/images/Hero_Logo_White.png" alt="RecreateStudio - Professional Photography" class="hero-logo-image">
+            <img src="images/Hero_Logo_White.png" alt="RecreateStudio - Professional Photography" class="hero-logo-image">
           </div>
           <h1 class="hero-title">Capturing Life's Most Beautiful Moments</h1>
           <p class="hero-subtitle">Professional photography that tells your unique story</p>
