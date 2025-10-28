@@ -51,6 +51,8 @@
       overflow: hidden;
       transition: all 0.3s ease;
       position: relative;
+      display: flex;
+      flex-direction: column;
 
       &:hover {
         transform: translateY(-8px);
@@ -78,6 +80,9 @@
 
       .package-content {
         padding: 2rem;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
 
         .package-category {
           color: #c084fc;
@@ -164,6 +169,7 @@
           letter-spacing: 1px;
           cursor: pointer;
           transition: all 0.3s ease;
+          margin-top: auto;
 
           &:hover {
             transform: translateY(-2px);
