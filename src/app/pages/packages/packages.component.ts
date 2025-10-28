@@ -95,7 +95,7 @@ interface Package {
             <button class="btn-secondary">Get Custom Quote</button>
           </div>
           <div class="contact-info">
-            <p>Call: (555) 123-4567 | Email: hello@recreatestudio.com</p>
+            <p>Call: (xxx) xxx-xxxx | Email: hello@recreatestudio.com</p>
           </div>
         </div>
       </section>
@@ -174,7 +174,6 @@ export class PackagesComponent {
         'Custom USB presentation box',
         'Print release included',
         'Engagement session included',
-        '2 photographers all day',
         'Same-day preview images',
         'Wedding album design consultation'
       ],
@@ -264,7 +263,7 @@ export class PackagesComponent {
     },
     {
       title: 'Contract & Deposit',
-      description: 'Secure your date with a signed contract and 50% deposit via our secure payment system.'
+      description: 'Secure your date with a signed contract and 50% deposit.'
     },
     {
       title: 'Session Planning',
@@ -276,7 +275,7 @@ export class PackagesComponent {
     },
     {
       title: 'Image Delivery',
-      description: 'Receive your edited high-resolution images through a beautiful online gallery within 2 weeks.'
+      description: 'Receive your edited high-resolution images within 2 weeks.'
     }
   ];
 }

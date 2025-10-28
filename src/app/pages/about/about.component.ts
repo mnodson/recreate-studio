@@ -18,29 +18,27 @@ import { RouterLink } from '@angular/router';
             </div>
             <div class="about-text">
               <h1>About the Artist</h1>
-              <h2>Sarah Johnson</h2>
+              <h2>Laura Hoffman</h2>
               <p class="intro">
-                With over 8 years of experience in professional photography, I specialize in 
+                With over 15 years of experience in photography, I specialize in 
                 capturing authentic moments that tell compelling stories. My passion lies in 
                 creating timeless images that reflect the unique beauty and emotion of each 
                 subject.
               </p>
               <p>
-                Based in the heart of the city, I work with individuals, families, and 
+                Based in the heart of Texas, I work with individuals, families, and 
                 businesses to create stunning visual narratives. Whether it's the intimate 
                 moments of a wedding day, the joy of a family gathering, or the confidence 
                 of a professional headshot, I approach each session with creativity, 
                 patience, and attention to detail.
               </p>
-              <div class="credentials">
-                <h3>Professional Background</h3>
+              <!-- <div class="credentials">
+                <h3>Background</h3>
                 <ul>
-                  <li>Bachelor of Fine Arts in Photography</li>
-                  <li>Certified Professional Photographer (CPP)</li>
-                  <li>Member of Professional Photographers of America</li>
-                  <li>Featured in Photography Magazine 2023</li>
+                  <li>Family Events</li>
+                  <li>Senior shots</li>
                 </ul>
-              </div>
+              </div> -->
             </div>
           </div>
         </div>

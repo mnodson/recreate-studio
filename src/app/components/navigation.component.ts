@@ -9,9 +9,6 @@ import { CommonModule } from '@angular/common';
   template: `
     <nav class="navigation">
       <div class="nav-container">
-        <div class="logo">
-          <h1>RecreateStudio</h1>
-        </div>
         <ul class="nav-links">
           <li><a routerLink="/home" routerLinkActive="active">Home</a></li>
           <li><a routerLink="/about" routerLinkActive="active">About</a></li>

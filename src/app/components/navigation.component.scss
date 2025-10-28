@@ -13,16 +13,8 @@
     margin: 0 auto;
     padding: 0 2rem;
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
-
-    .logo h1 {
-      color: #e6d7ff;
-      font-size: 1.8rem;
-      font-weight: 300;
-      letter-spacing: 2px;
-      margin: 0;
-    }
 
     .nav-links {
       display: flex;
@@ -103,6 +95,8 @@
 
   @media (max-width: 768px) {
     .nav-container {
+      justify-content: center;
+
       .nav-links {
         display: none;
       }

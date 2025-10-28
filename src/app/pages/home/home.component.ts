@@ -10,6 +10,9 @@ import { RouterLink } from '@angular/router';
     <div class="home-container">
       <section class="hero">
         <div class="hero-content">
+          <div class="hero-logo">
+            <img src="/images/Hero_Logo_White.png" alt="RecreateStudio - Professional Photography" class="hero-logo-image">
+          </div>
           <h1 class="hero-title">Capturing Life's Most Beautiful Moments</h1>
           <p class="hero-subtitle">Professional photography that tells your unique story</p>
           <div class="hero-buttons">
@@ -28,13 +31,15 @@ import { RouterLink } from '@angular/router';
         <div class="container">
           <h2>Recent Work</h2>
           <div class="highlights-grid">
-            <div class="highlight-item" *ngFor="let highlight of highlights">
+            @for (highlight of highlights; track highlight.title) {
+              <div class="highlight-item">
               <div class="highlight-image">
                 <span>{{ highlight.category }}</span>
               </div>
-              <h3>{{ highlight.title }}</h3>
-              <p>{{ highlight.description }}</p>
-            </div>
+                <h3>{{ highlight.title }}</h3>
+                <p>{{ highlight.description }}</p>
+              </div>
+            }
           </div>
           <div class="cta-section">
             <button class="btn-outline" routerLink="/gallery">View All Work</button>
@@ -46,11 +51,13 @@ import { RouterLink } from '@angular/router';
         <div class="container">
           <h2>Photography Services</h2>
           <div class="services-grid">
-            <div class="service-card" *ngFor="let service of services">
-              <h3>{{ service.name }}</h3>
-              <p>{{ service.description }}</p>
-              <span class="service-price">Starting at {{ service.price }}</span>
-            </div>
+            @for (service of services; track service.name) {
+              <div class="service-card">
+                <h3>{{ service.name }}</h3>
+                <p>{{ service.description }}</p>
+                <span class="service-price">Starting at {{ service.price }}</span>
+              </div>
+            }
           </div>
           <div class="cta-section">
             <button class="btn-primary" routerLink="/packages">View All Packages</button>
