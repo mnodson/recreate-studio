@@ -1,4 +1,30 @@
-# RecreateStudioWebsite
+# RecreateStudio Photography Portfolio
+
+A professional photography portfolio website built with Angular, featuring a modern dark/purple theme and comprehensive photography business sections.
+
+## 🎨 Features
+
+- **Modern Design**: Dark/purple color scheme with gradient effects
+- **Responsive Layout**: Optimized for all devices and screen sizes
+- **Home Page**: Hero section with prominent branding and service highlights
+- **About Page**: Professional photographer bio and philosophy
+- **Gallery**: Filterable portfolio with categories (Weddings, Portraits, Fashion, Events, Commercial)
+- **Packages**: Detailed pricing and service packages
+- **Professional Navigation**: Clean, centered navigation design
+
+## 🚀 Deployment
+
+This website is automatically deployed to GitHub Pages using GitHub Actions.
+
+### Automatic Deployment
+- Pushes to the `main` branch automatically trigger a deployment
+- The site will be available at: `https://[username].github.io/recreate-studio-website/`
+
+### Manual Local Deployment
+To build for GitHub Pages locally:
+```bash
+npm run build:gh-pages
+```
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.7.
 
