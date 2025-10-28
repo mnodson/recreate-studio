@@ -15,14 +15,14 @@ import { RouterLink } from '@angular/router';
           </div>
           <h1 class="hero-title">Capturing Life's Most Beautiful Moments</h1>
           <p class="hero-subtitle">Professional photography that tells your unique story</p>
-          <div class="hero-buttons">
-            <button class="btn-primary" routerLink="/gallery">View Gallery</button>
-            <button class="btn-secondary" routerLink="/packages">Book Session</button>
-          </div>
         </div>
         <div class="hero-image">
           <div class="placeholder-image">
             <span>Featured Photography</span>
+          </div>
+          <div class="mobile-cta-buttons">
+            <button class="btn-primary" routerLink="/gallery">View Gallery</button>
+            <button class="btn-secondary" routerLink="/packages">Book Session</button>
           </div>
         </div>
       </section>
