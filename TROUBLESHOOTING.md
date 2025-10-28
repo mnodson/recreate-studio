@@ -69,6 +69,11 @@ git push origin main
 - **Solution**: GitHub Actions uploads from `./dist/recreate-studio-website/browser`
 - **Result**: GitHub Pages gets files in the correct root structure
 
+#### Asset Path Issue (Fixed)
+- **Problem**: Assets (JS, CSS, images) requested from root instead of subdirectory
+- **Solution**: Added `--deploy-url /recreate-studio/` to build command
+- **Result**: All assets now correctly prefixed with repository path
+
 #### Images Not Loading
 - All image paths start with `/images/` ✅
 - Images are in `public/images/` directory ✅
