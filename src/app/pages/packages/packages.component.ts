@@ -153,8 +153,7 @@ export class PackagesComponent {
         'Online gallery with guest access',
         'USB drive with all images',
         'Print release included',
-        'Engagement session included',
-        '2 photographers for ceremony'
+        'Engagement session included'
       ],
       popular: true,
       additionalInfo: 'Travel within 50 miles included'
