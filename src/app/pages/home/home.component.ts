@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { ImageService } from '../../services/image.service';
 
 @Component({
   selector: 'app-home',
@@ -17,9 +18,11 @@ import { RouterLink } from '@angular/router';
           <p class="hero-subtitle">Professional photography that tells your unique story</p>
         </div>
         <div class="hero-image">
-          <div class="placeholder-image">
-            <span>Featured Photography</span>
-          </div>
+          <img
+            [src]="imageService.getImageUrl('portraits/portraits-006.jpg')"
+            alt="Featured Photography"
+            class="hero-photo"
+            (error)="onImageError($event)">
           <div class="mobile-cta-buttons">
             <button class="btn-primary" routerLink="/gallery">View Gallery</button>
             <button class="btn-secondary" routerLink="/packages">Book Session</button>
@@ -33,9 +36,12 @@ import { RouterLink } from '@angular/router';
           <div class="highlights-grid">
             @for (highlight of highlights; track highlight.title) {
               <div class="highlight-item">
-              <div class="highlight-image">
-                <span>{{ highlight.category }}</span>
-              </div>
+                <div class="highlight-image">
+                  <img
+                    [src]="imageService.getThumbnailUrl(highlight.imageUrl)"
+                    [alt]="highlight.title"
+                    (error)="onImageError($event)">
+                </div>
                 <h3>{{ highlight.title }}</h3>
                 <p>{{ highlight.description }}</p>
               </div>
@@ -69,39 +75,56 @@ import { RouterLink } from '@angular/router';
   styleUrls: ['./home.component.scss']
 })
 export class HomeComponent {
+  constructor(public imageService: ImageService) {}
+
   highlights = [
     {
-      title: 'Sunset Wedding',
-      description: 'Romantic outdoor ceremony captured in golden hour',
-      category: 'Wedding'
+      title: 'Senior Portraits',
+      description: 'Celebrating milestones with bold, creative portraits that capture personality, confidence, and that unforgettable senior year spirit',
+      category: 'Senior',
+      imageUrl: 'senior/senior-001.jpg'
     },
     {
-      title: 'Family Portrait',
-      description: 'Timeless family memories in natural setting',
-      category: 'Portrait'
+      title: 'Family Portraits',
+      description: 'Authentic moments of laughter, love, and connection. Beautifully preserved memories that grow more precious with every passing year',
+      category: 'Family',
+      imageUrl: 'family/family-001.jpg'
     },
     {
-      title: 'Fashion Editorial',
-      description: 'Contemporary fashion photography with bold styling',
-      category: 'Fashion'
+      title: 'Sports Photography',
+      description: 'Freezing peak athletic performance in stunning clarity. The intensity, the triumph, the split-second moments that define champions',
+      category: 'Sports',
+      imageUrl: 'sports/sports-003.jpg'
     }
   ];
 
   services = [
     {
-      name: 'Wedding Photography',
-      description: 'Complete wedding day coverage with artistic storytelling',
-      price: '$2,500'
+      name: 'Portrait Photography',
+      description: 'Professional individual and couple portraits with artistic vision and creative direction',
+      price: '$400'
     },
     {
-      name: 'Portrait Sessions',
-      description: 'Individual, couple, and family portrait photography',
+      name: 'Family Sessions',
+      description: 'Capturing authentic family connections and timeless memories together',
       price: '$350'
     },
     {
-      name: 'Commercial Photography',
-      description: 'Professional photography for brands and businesses',
-      price: '$500'
+      name: 'Senior Photography',
+      description: 'Creative senior portraits celebrating your milestone year with style and personality',
+      price: '$275'
     }
   ];
+
+  /**
+   * Fallback handler for image loading errors
+   * Shows a placeholder or default image if the actual image fails to load
+   */
+  onImageError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    // You can set a default placeholder image here
+    // For now, we'll hide the broken image
+    img.style.display = 'none';
+    console.warn('Failed to load image:', img.src);
+  }
 }

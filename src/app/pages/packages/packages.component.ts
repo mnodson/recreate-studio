@@ -141,43 +141,42 @@ export class PackagesComponent {
     },
     {
       id: 3,
-      name: 'Signature',
-      category: 'Wedding Photography',
-      price: '$2,500',
-      duration: '8 Hours',
-      description: 'Complete wedding day coverage with artistic storytelling',
+      name: 'Senior Photography',
+      category: 'Senior Portraits',
+      price: '$275',
+      duration: '1 Hour',
+      description: 'Celebrate your senior year with bold, creative portraits',
       features: [
-        '8 hours of wedding day coverage',
-        'Getting ready through reception',
-        '500+ edited high-resolution images',
-        'Online gallery with guest access',
-        'USB drive with all images',
-        'Print release included',
-        'Engagement session included'
+        '1-hour portrait session',
+        '2 outfit changes',
+        '30 edited high-resolution images',
+        'Multiple location options',
+        'Cap and gown photos included',
+        'Online gallery for sharing',
+        'Print release included'
       ],
       popular: true,
-      additionalInfo: 'Travel within 50 miles included'
+      additionalInfo: 'Bring friends for group shots'
     },
     {
       id: 4,
-      name: 'Luxury',
-      category: 'Wedding Photography',
-      price: '$4,200',
-      duration: '10 Hours',
-      description: 'Premium wedding experience with unlimited coverage',
+      name: 'Boudoir Experience',
+      category: 'Boudoir Photography',
+      price: '$450',
+      duration: '2 Hours',
+      description: 'Elegant and empowering boudoir portraits in a comfortable setting',
       features: [
-        '10 hours of wedding coverage',
-        'Full day documentation',
-        '800+ edited high-resolution images',
-        'Premium online gallery',
-        'Custom USB presentation box',
+        '2-hour private session',
+        'Professional hair and makeup',
+        '40 edited high-resolution images',
+        'Multiple wardrobe changes',
+        'Private online gallery',
         'Print release included',
-        'Engagement session included',
-        'Same-day preview images',
-        'Wedding album design consultation'
+        'Luxury gift box option available',
+        'Styling consultation included'
       ],
       popular: false,
-      additionalInfo: 'Travel within 100 miles included'
+      additionalInfo: 'Private studio setting with professional guidance'
     },
     {
       id: 5,

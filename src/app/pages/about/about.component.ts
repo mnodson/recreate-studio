@@ -26,11 +26,11 @@ import { RouterLink } from '@angular/router';
                 subject.
               </p>
               <p>
-                Based in the heart of Texas, I work with individuals, families, and 
-                businesses to create stunning visual narratives. Whether it's the intimate 
-                moments of a wedding day, the joy of a family gathering, or the confidence 
-                of a professional headshot, I approach each session with creativity, 
-                patience, and attention to detail.
+                Based in the heart of Texas, I work with individuals, families, and
+                businesses to create stunning visual narratives. Whether it's capturing
+                the authentic joy of a family gathering, the bold confidence of a senior
+                portrait, or the professional polish of a business headshot, I approach
+                each session with creativity, patience, and attention to detail.
               </p>
               <!-- <div class="credentials">
                 <h3>Background</h3>
