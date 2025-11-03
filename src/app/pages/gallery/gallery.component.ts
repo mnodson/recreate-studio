@@ -58,7 +58,10 @@ interface GalleryImage {
                     [src]="imageService.getThumbnailUrl(image.imageUrl)"
                     [alt]="image.title"
                     class="gallery-image"
-                    (error)="onImageError($event)">
+                    loading="lazy"
+                    decoding="async"
+                    (error)="onImageError($event)"
+                    (load)="onImageLoad($event)">
                   <div class="image-overlay">
                     <h3>{{ image.title }}</h3>
                     <p>{{ image.description }}</p>
@@ -116,7 +119,7 @@ export class GalleryComponent implements OnInit {
 
   private _filteredImages: GalleryImage[] = [];
   displayedImages: GalleryImage[] = [];
-  imagesPerLoad = 9;
+  imagesPerLoad = 6; // Reduced for better initial performance
   currentLoadIndex = 0;
   hasMoreImages = true;
 
@@ -165,6 +168,11 @@ export class GalleryComponent implements OnInit {
     const img = event.target as HTMLImageElement;
     img.style.display = 'none';
     console.warn('Failed to load gallery image:', img.src);
+  }
+
+  onImageLoad(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    img.classList.add('loaded');
   }
 
   get filteredImages() {
