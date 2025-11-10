@@ -36,6 +36,9 @@
         opacity: 1;
         transition: opacity 2s ease-in-out;
         z-index: 2;
+        backface-visibility: hidden;
+        will-change: opacity;
+        transform: translateZ(0);
 
         &.fade-out {
           opacity: 0;
@@ -254,6 +257,9 @@
         opacity: 1;
         transition: opacity 2s ease-in-out;
         z-index: 2;
+        backface-visibility: hidden;
+        will-change: opacity;
+        transform: translateZ(0);
 
         &.fade-out {
           opacity: 0;
