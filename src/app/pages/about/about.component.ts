@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { ImageService } from '../../services/image.service';
 
 @Component({
   selector: 'app-about',
@@ -12,17 +13,19 @@ import { RouterLink } from '@angular/router';
         <div class="container">
           <div class="about-content">
             <div class="about-image">
-              <div class="placeholder-image">
-                <span>Photographer Portrait</span>
-              </div>
+              <img
+                [src]="imageService.getImageUrl(bioImages[currentImageIndex()])"
+                alt="Laura Hoffman - Photographer"
+                class="portrait-image"
+                (error)="onImageError($event)">
             </div>
             <div class="about-text">
               <h1>About the Artist</h1>
               <h2>Laura Hoffman</h2>
               <p class="intro">
-                With over 15 years of experience in photography, I specialize in 
-                capturing authentic moments that tell compelling stories. My passion lies in 
-                creating timeless images that reflect the unique beauty and emotion of each 
+                With over 15 years of experience in photography, I specialize in
+                capturing authentic moments that tell compelling stories. My passion lies in
+                creating timeless images that reflect the unique beauty and emotion of each
                 subject.
               </p>
               <p>
@@ -51,21 +54,21 @@ import { RouterLink } from '@angular/router';
             <div class="philosophy-item">
               <h3>Authentic Storytelling</h3>
               <p>
-                Every photograph should tell a story. I believe in capturing genuine 
+                Every photograph should tell a story. I believe in capturing genuine
                 emotions and candid moments that reflect who you truly are.
               </p>
             </div>
             <div class="philosophy-item">
               <h3>Artistic Vision</h3>
               <p>
-                Combining technical expertise with creative vision to produce images 
+                Combining technical expertise with creative vision to produce images
                 that are both beautiful and meaningful.
               </p>
             </div>
             <div class="philosophy-item">
               <h3>Personal Connection</h3>
               <p>
-                Building trust and rapport with my clients to create a comfortable 
+                Building trust and rapport with my clients to create a comfortable
                 environment where natural expressions shine through.
               </p>
             </div>
@@ -103,9 +106,11 @@ import { RouterLink } from '@angular/router';
               </div>
             </div>
             <div class="approach-image">
-              <div class="placeholder-image">
-                <span>Behind the Scenes</span>
-              </div>
+              <img
+                [src]="imageService.getImageUrl(bioImages[(currentImageIndex() + 1) % bioImages.length])"
+                alt="Behind the Scenes"
+                class="bts-image"
+                (error)="onImageError($event)">
             </div>
           </div>
         </div>
@@ -125,4 +130,39 @@ import { RouterLink } from '@angular/router';
   `,
   styleUrls: ['./about.component.scss']
 })
-export class AboutComponent {}
+export class AboutComponent implements OnInit, OnDestroy {
+  private intervalId?: number;
+  currentImageIndex = signal(0);
+
+  // Bio images from the bio folder
+  bioImages = [
+    'bio/bio-001.jpg',
+    'bio/bio-002.jpg',
+    'bio/bio-003.jpg',
+    'bio/bio-004.jpg'
+  ];
+
+  constructor(public imageService: ImageService) {}
+
+  ngOnInit(): void {
+    // Rotate through images every 5 seconds
+    this.intervalId = window.setInterval(() => {
+      this.currentImageIndex.set((this.currentImageIndex() + 1) % this.bioImages.length);
+    }, 5000);
+  }
+
+  ngOnDestroy(): void {
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
+    }
+  }
+
+  /**
+   * Fallback handler for image loading errors
+   */
+  onImageError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    img.style.display = 'none';
+    console.warn('Failed to load image:', img.src);
+  }
+}
