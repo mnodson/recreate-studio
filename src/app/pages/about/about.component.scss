@@ -19,10 +19,11 @@
 
     .about-image {
       position: relative;
-      overflow: hidden;
+      overflow: visible;
       border-radius: 12px;
       box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
       height: 400px;
+      perspective: 1500px;
 
       .portrait-image {
         position: absolute;
@@ -33,28 +34,33 @@
         object-fit: cover;
         display: block;
         border-radius: 12px;
-        transition: transform 0.8s ease-in-out;
+        transition: transform 1s ease-in-out;
         backface-visibility: hidden;
         will-change: transform;
+        transform-origin: left center;
+        transform-style: preserve-3d;
 
         &.portrait-slot-1 {
-          transform: translateX(100%);
+          z-index: 2;
+          transform: rotateY(-90deg);
 
           &.visible {
-            transform: translateX(0);
+            transform: rotateY(0deg);
           }
         }
 
         &.portrait-slot-2 {
-          transform: translateX(100%);
+          z-index: 1;
+          transform: rotateY(0deg);
 
           &.visible {
-            transform: translateX(0);
+            z-index: 2;
+            transform: rotateY(0deg);
           }
         }
 
         &:not(.visible) {
-          transform: translateX(-100%);
+          transform: rotateY(90deg);
         }
       }
 
@@ -244,10 +250,11 @@
 
     .approach-image {
       position: relative;
-      overflow: hidden;
+      overflow: visible;
       border-radius: 12px;
       box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
       height: 500px;
+      perspective: 1500px;
 
       .bts-image {
         position: absolute;
@@ -258,28 +265,33 @@
         object-fit: cover;
         display: block;
         border-radius: 12px;
-        transition: transform 0.8s ease-in-out;
+        transition: transform 1s ease-in-out;
         backface-visibility: hidden;
         will-change: transform;
+        transform-origin: left center;
+        transform-style: preserve-3d;
 
         &.bts-slot-1 {
-          transform: translateX(100%);
+          z-index: 2;
+          transform: rotateY(-90deg);
 
           &.visible {
-            transform: translateX(0);
+            transform: rotateY(0deg);
           }
         }
 
         &.bts-slot-2 {
-          transform: translateX(100%);
+          z-index: 1;
+          transform: rotateY(0deg);
 
           &.visible {
-            transform: translateX(0);
+            z-index: 2;
+            transform: rotateY(0deg);
           }
         }
 
         &:not(.visible) {
-          transform: translateX(-100%);
+          transform: rotateY(90deg);
         }
       }
 
