@@ -20,7 +20,7 @@ import { ImageService } from '../../services/image.service';
                 [class.fade-out]="isTransitioning()"
                 (error)="onImageError($event)">
               <img
-                [src]="imageService.getImageUrl(bioImages[getNextImageIndex()])"
+                [src]="imageService.getImageUrl(bioImages[nextImageIndex()])"
                 alt="Laura Hoffman - Photographer"
                 class="portrait-image portrait-image-next"
                 [class.fade-in]="isTransitioning()"
@@ -120,7 +120,7 @@ import { ImageService } from '../../services/image.service';
                 [class.fade-out]="isTransitioning()"
                 (error)="onImageError($event)">
               <img
-                [src]="imageService.getImageUrl(bioImages[(currentImageIndex() + 3) % bioImages.length])"
+                [src]="imageService.getImageUrl(bioImages[(nextImageIndex() + 2) % bioImages.length])"
                 alt="Behind the Scenes"
                 class="bts-image bts-image-next"
                 [class.fade-in]="isTransitioning()"
@@ -147,6 +147,7 @@ import { ImageService } from '../../services/image.service';
 export class AboutComponent implements OnInit, OnDestroy {
   private intervalId?: number;
   currentImageIndex = signal(0);
+  nextImageIndex = signal(1);
   isTransitioning = signal(false);
 
   // Bio images from the bio folder
@@ -162,11 +163,15 @@ export class AboutComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     // Rotate through images every 6 seconds
     this.intervalId = window.setInterval(() => {
+      // Start the fade transition
       this.isTransitioning.set(true);
+
+      // After transition completes, update indices
       setTimeout(() => {
-        this.currentImageIndex.set((this.currentImageIndex() + 1) % this.bioImages.length);
         this.isTransitioning.set(false);
-      }, 1000); // Wait 1s before swapping (half of 2s transition)
+        this.currentImageIndex.set(this.nextImageIndex());
+        this.nextImageIndex.set((this.nextImageIndex() + 1) % this.bioImages.length);
+      }, 2000); // Full 2s transition duration
     }, 6000);
   }
 
@@ -174,10 +179,6 @@ export class AboutComponent implements OnInit, OnDestroy {
     if (this.intervalId) {
       clearInterval(this.intervalId);
     }
-  }
-
-  getNextImageIndex(): number {
-    return (this.currentImageIndex() + 1) % this.bioImages.length;
   }
 
   /**
