@@ -33,14 +33,28 @@
         object-fit: cover;
         display: block;
         border-radius: 12px;
-        opacity: 0;
-        transition: opacity 1.5s ease-in-out;
+        transition: transform 0.8s ease-in-out;
         backface-visibility: hidden;
-        will-change: opacity;
-        transform: translateZ(0);
+        will-change: transform;
 
-        &.visible {
-          opacity: 1;
+        &.portrait-slot-1 {
+          transform: translateX(100%);
+
+          &.visible {
+            transform: translateX(0);
+          }
+        }
+
+        &.portrait-slot-2 {
+          transform: translateX(100%);
+
+          &.visible {
+            transform: translateX(0);
+          }
+        }
+
+        &:not(.visible) {
+          transform: translateX(-100%);
         }
       }
 
@@ -244,14 +258,28 @@
         object-fit: cover;
         display: block;
         border-radius: 12px;
-        opacity: 0;
-        transition: opacity 1.5s ease-in-out;
+        transition: transform 0.8s ease-in-out;
         backface-visibility: hidden;
-        will-change: opacity;
-        transform: translateZ(0);
+        will-change: transform;
 
-        &.visible {
-          opacity: 1;
+        &.bts-slot-1 {
+          transform: translateX(100%);
+
+          &.visible {
+            transform: translateX(0);
+          }
+        }
+
+        &.bts-slot-2 {
+          transform: translateX(100%);
+
+          &.visible {
+            transform: translateX(0);
+          }
+        }
+
+        &:not(.visible) {
+          transform: translateX(-100%);
         }
       }
 
