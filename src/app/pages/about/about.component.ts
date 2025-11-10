@@ -17,6 +17,13 @@ import { ImageService } from '../../services/image.service';
                 [src]="imageService.getImageUrl(bioImages[currentImageIndex()])"
                 alt="Laura Hoffman - Photographer"
                 class="portrait-image"
+                [class.fade-out]="isTransitioning()"
+                (error)="onImageError($event)">
+              <img
+                [src]="imageService.getImageUrl(bioImages[getNextImageIndex()])"
+                alt="Laura Hoffman - Photographer"
+                class="portrait-image portrait-image-next"
+                [class.fade-in]="isTransitioning()"
                 (error)="onImageError($event)">
             </div>
             <div class="about-text">
@@ -107,9 +114,16 @@ import { ImageService } from '../../services/image.service';
             </div>
             <div class="approach-image">
               <img
-                [src]="imageService.getImageUrl(bioImages[(currentImageIndex() + 1) % bioImages.length])"
+                [src]="imageService.getImageUrl(bioImages[(currentImageIndex() + 2) % bioImages.length])"
                 alt="Behind the Scenes"
                 class="bts-image"
+                [class.fade-out]="isTransitioning()"
+                (error)="onImageError($event)">
+              <img
+                [src]="imageService.getImageUrl(bioImages[(currentImageIndex() + 3) % bioImages.length])"
+                alt="Behind the Scenes"
+                class="bts-image bts-image-next"
+                [class.fade-in]="isTransitioning()"
                 (error)="onImageError($event)">
             </div>
           </div>
@@ -133,6 +147,7 @@ import { ImageService } from '../../services/image.service';
 export class AboutComponent implements OnInit, OnDestroy {
   private intervalId?: number;
   currentImageIndex = signal(0);
+  isTransitioning = signal(false);
 
   // Bio images from the bio folder
   bioImages = [
@@ -147,7 +162,11 @@ export class AboutComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     // Rotate through images every 5 seconds
     this.intervalId = window.setInterval(() => {
-      this.currentImageIndex.set((this.currentImageIndex() + 1) % this.bioImages.length);
+      this.isTransitioning.set(true);
+      setTimeout(() => {
+        this.currentImageIndex.set((this.currentImageIndex() + 1) % this.bioImages.length);
+        this.isTransitioning.set(false);
+      }, 600); // Half of transition time
     }, 5000);
   }
 
@@ -155,6 +174,10 @@ export class AboutComponent implements OnInit, OnDestroy {
     if (this.intervalId) {
       clearInterval(this.intervalId);
     }
+  }
+
+  getNextImageIndex(): number {
+    return (this.currentImageIndex() + 1) % this.bioImages.length;
   }
 
   /**

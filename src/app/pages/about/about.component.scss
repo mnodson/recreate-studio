@@ -33,7 +33,22 @@
         object-fit: cover;
         display: block;
         border-radius: 12px;
-        animation: slideInFade 1s ease-in-out;
+        opacity: 1;
+        transition: opacity 1.2s ease-in-out;
+        z-index: 2;
+
+        &.fade-out {
+          opacity: 0;
+        }
+
+        &.portrait-image-next {
+          z-index: 1;
+          opacity: 0;
+
+          &.fade-in {
+            opacity: 1;
+          }
+        }
       }
 
       .placeholder-image {
@@ -47,17 +62,6 @@
         justify-content: center;
         color: #b8a9d1;
         font-size: 1.1rem;
-      }
-    }
-
-    @keyframes slideInFade {
-      0% {
-        opacity: 0;
-        transform: translateX(30px);
-      }
-      100% {
-        opacity: 1;
-        transform: translateX(0);
       }
     }
 
@@ -247,7 +251,22 @@
         object-fit: cover;
         display: block;
         border-radius: 12px;
-        animation: slideInFade 1s ease-in-out;
+        opacity: 1;
+        transition: opacity 1.2s ease-in-out;
+        z-index: 2;
+
+        &.fade-out {
+          opacity: 0;
+        }
+
+        &.bts-image-next {
+          z-index: 1;
+          opacity: 0;
+
+          &.fade-in {
+            opacity: 1;
+          }
+        }
       }
 
       .placeholder-image {
