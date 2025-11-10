@@ -23,7 +23,7 @@
       border-radius: 12px;
       box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
       height: 400px;
-      perspective: 1500px;
+      perspective: 2000px;
 
       .portrait-image {
         position: absolute;
@@ -34,33 +34,36 @@
         object-fit: cover;
         display: block;
         border-radius: 12px;
-        transition: transform 1s ease-in-out;
+        transition: transform 1.2s ease-in-out, box-shadow 1.2s ease-in-out;
         backface-visibility: hidden;
         will-change: transform;
-        transform-origin: left center;
+        transform-origin: bottom right;
         transform-style: preserve-3d;
 
         &.portrait-slot-1 {
           z-index: 2;
-          transform: rotateY(-90deg);
+          transform: rotateZ(0deg) rotateY(0deg) translateX(0);
 
           &.visible {
-            transform: rotateY(0deg);
+            transform: rotateZ(0deg) rotateY(0deg) translateX(0);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
           }
         }
 
         &.portrait-slot-2 {
           z-index: 1;
-          transform: rotateY(0deg);
+          transform: rotateZ(0deg) rotateY(0deg) translateX(0);
 
           &.visible {
             z-index: 2;
-            transform: rotateY(0deg);
+            transform: rotateZ(0deg) rotateY(0deg) translateX(0);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
           }
         }
 
         &:not(.visible) {
-          transform: rotateY(90deg);
+          transform: rotateZ(-15deg) rotateY(-180deg) translateX(-120%);
+          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
         }
       }
 
@@ -254,7 +257,7 @@
       border-radius: 12px;
       box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
       height: 500px;
-      perspective: 1500px;
+      perspective: 2000px;
 
       .bts-image {
         position: absolute;
@@ -265,33 +268,36 @@
         object-fit: cover;
         display: block;
         border-radius: 12px;
-        transition: transform 1s ease-in-out;
+        transition: transform 1.2s ease-in-out, box-shadow 1.2s ease-in-out;
         backface-visibility: hidden;
         will-change: transform;
-        transform-origin: left center;
+        transform-origin: bottom right;
         transform-style: preserve-3d;
 
         &.bts-slot-1 {
           z-index: 2;
-          transform: rotateY(-90deg);
+          transform: rotateZ(0deg) rotateY(0deg) translateX(0);
 
           &.visible {
-            transform: rotateY(0deg);
+            transform: rotateZ(0deg) rotateY(0deg) translateX(0);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
           }
         }
 
         &.bts-slot-2 {
           z-index: 1;
-          transform: rotateY(0deg);
+          transform: rotateZ(0deg) rotateY(0deg) translateX(0);
 
           &.visible {
             z-index: 2;
-            transform: rotateY(0deg);
+            transform: rotateZ(0deg) rotateY(0deg) translateX(0);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
           }
         }
 
         &:not(.visible) {
-          transform: rotateY(90deg);
+          transform: rotateZ(-15deg) rotateY(-180deg) translateX(-120%);
+          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
         }
       }
 
