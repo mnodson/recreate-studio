@@ -1,11 +1,36 @@
-import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, signal, inject } from '@angular/core';
+import { RouterOutlet, Router, NavigationStart, NavigationEnd, NavigationCancel, NavigationError } from '@angular/router';
 import { NavigationComponent } from './components/navigation.component';
+import { shutterAnimation } from './route-animations';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-root',
   imports: [RouterOutlet, NavigationComponent],
   templateUrl: './app.html',
-  styleUrl: './app.scss'
+  styleUrl: './app.scss',
+  animations: [shutterAnimation]
 })
-export class App {}
+export class App {
+  private router = inject(Router);
+  shutterActive = signal(false);
+
+  constructor() {
+    // Listen to navigation events
+    this.router.events.pipe(
+      filter(event =>
+        event instanceof NavigationStart ||
+        event instanceof NavigationEnd ||
+        event instanceof NavigationCancel ||
+        event instanceof NavigationError
+      )
+    ).subscribe(event => {
+      if (event instanceof NavigationStart) {
+        this.shutterActive.set(true);
+      } else {
+        // Delay removing the active state to let animation complete
+        setTimeout(() => this.shutterActive.set(false), 600);
+      }
+    });
+  }
+}

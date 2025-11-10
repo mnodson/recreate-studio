@@ -1,0 +1,98 @@
+.route-container {
+  position: relative;
+  min-height: calc(100vh - 60px);
+  width: 100%;
+}
+
+.camera-shutter {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 9999;
+  overflow: hidden;
+
+  .shutter-panel {
+    position: absolute;
+    background: linear-gradient(135deg,
+      #1a1a1a 0%,
+      #0f0f0f 50%,
+      #1a1a1a 100%
+    );
+    transition: transform 0.6s cubic-bezier(0.65, 0, 0.35, 1);
+    box-shadow:
+      inset 0 0 30px rgba(0, 0, 0, 0.5),
+      0 0 20px rgba(0, 0, 0, 0.3);
+
+    &::before {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        to bottom right,
+        rgba(255, 255, 255, 0.1) 0%,
+        transparent 50%,
+        rgba(0, 0, 0, 0.2) 100%
+      );
+      opacity: 0.4;
+    }
+  }
+
+  // Top panel
+  .shutter-panel-top {
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 50%;
+    transform: translateY(-100%);
+  }
+
+  // Right panel
+  .shutter-panel-right {
+    top: 0;
+    right: 0;
+    width: 50%;
+    height: 100%;
+    transform: translateX(100%);
+  }
+
+  // Bottom panel
+  .shutter-panel-bottom {
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 50%;
+    transform: translateY(100%);
+  }
+
+  // Left panel
+  .shutter-panel-left {
+    top: 0;
+    left: 0;
+    width: 50%;
+    height: 100%;
+    transform: translateX(-100%);
+  }
+
+  // Active state - panels slide in to cover screen
+  &.active {
+    .shutter-panel-top {
+      transform: translateY(0);
+    }
+
+    .shutter-panel-right {
+      transform: translateX(0);
+    }
+
+    .shutter-panel-bottom {
+      transform: translateY(0);
+    }
+
+    .shutter-panel-left {
+      transform: translateX(0);
+    }
+  }
+}
