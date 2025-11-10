@@ -160,14 +160,14 @@ export class AboutComponent implements OnInit, OnDestroy {
   constructor(public imageService: ImageService) {}
 
   ngOnInit(): void {
-    // Rotate through images every 5 seconds
+    // Rotate through images every 6 seconds
     this.intervalId = window.setInterval(() => {
       this.isTransitioning.set(true);
       setTimeout(() => {
         this.currentImageIndex.set((this.currentImageIndex() + 1) % this.bioImages.length);
         this.isTransitioning.set(false);
-      }, 600); // Half of transition time
-    }, 5000);
+      }, 1000); // Wait 1s before swapping (half of 2s transition)
+    }, 6000);
   }
 
   ngOnDestroy(): void {
