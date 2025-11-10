@@ -130,6 +130,43 @@
     }
   }
 
+  // Handheld camera jitter animation
+  @keyframes camera-jitter {
+    0% {
+      transform: translate(0, 0);
+    }
+    10% {
+      transform: translate(-0.5px, 0.3px);
+    }
+    20% {
+      transform: translate(0.4px, -0.2px);
+    }
+    30% {
+      transform: translate(-0.3px, 0.5px);
+    }
+    40% {
+      transform: translate(0.2px, -0.4px);
+    }
+    50% {
+      transform: translate(-0.4px, 0.2px);
+    }
+    60% {
+      transform: translate(0.5px, -0.3px);
+    }
+    70% {
+      transform: translate(-0.2px, 0.4px);
+    }
+    80% {
+      transform: translate(0.3px, -0.5px);
+    }
+    90% {
+      transform: translate(-0.5px, 0.2px);
+    }
+    100% {
+      transform: translate(0, 0);
+    }
+  }
+
   // Active state - panels slide in to cover screen
   &.active {
     .shutter-panel-top {
@@ -150,6 +187,7 @@
 
     .lens-vignette {
       opacity: 1;
+      animation: camera-jitter 2s ease-in-out infinite;
     }
   }
 }
