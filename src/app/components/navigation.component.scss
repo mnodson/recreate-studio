@@ -23,29 +23,36 @@
       padding: 0;
       gap: 2rem;
 
-      li a {
-        color: #b8a9d1;
-        text-decoration: none;
-        font-weight: 300;
-        letter-spacing: 1px;
-        transition: all 0.3s ease;
-        position: relative;
+      li {
+        display: flex;
 
-        &:hover {
-          color: #e6d7ff;
-        }
+        a {
+          display: block;
+          padding: 0.5rem 1rem;
+          color: #b8a9d1;
+          text-decoration: none;
+          font-weight: 300;
+          letter-spacing: 1px;
+          transition: all 0.3s ease;
+          position: relative;
+          cursor: pointer;
 
-        &.active {
-          color: #c084fc;
-          
-          &::after {
-            content: '';
-            position: absolute;
-            bottom: -5px;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: linear-gradient(90deg, #c084fc, #8b5cf6);
+          &:hover {
+            color: #e6d7ff;
+          }
+
+          &.active {
+            color: #c084fc;
+
+            &::after {
+              content: '';
+              position: absolute;
+              bottom: 0.25rem;
+              left: 1rem;
+              right: 1rem;
+              height: 2px;
+              background: linear-gradient(90deg, #c084fc, #8b5cf6);
+            }
           }
         }
       }
