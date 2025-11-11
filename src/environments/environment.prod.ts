@@ -1,10 +1,8 @@
-// This file is for production environment
 export const environment = {
   production: true,
-  // Production: Replace [YOUR_USERNAME] with your GitHub username
-  // Replace [REPO_NAME] with your images repository name (e.g., 'recreate-studio-images')
-  imageBaseUrl: 'https://mnodson.github.io/recreate-studio-images',
+  imageBaseUrl: 'https://your-github-username.github.io/your-repo-name/images',
 
+  // Firebase configuration for production
   firebase: {
     apiKey: 'AIzaSyCanHNk_UA53UirZqON3uhB1BiIIfB54mE',
     authDomain: 'recreate-1eaa9.firebaseapp.com',

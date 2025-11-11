@@ -1,11 +1,15 @@
-<app-navigation></app-navigation>
+@if (showNavigation()) {
+  <app-navigation></app-navigation>
+}
 <div class="route-container" [@routeAnimations]="outlet.isActivated ? outlet.activatedRoute : null">
   <router-outlet #outlet="outlet" />
 </div>
-<div class="camera-shutter" [class.active]="shutterActive()">
-  <div class="shutter-panel shutter-panel-top"></div>
-  <div class="shutter-panel shutter-panel-right"></div>
-  <div class="shutter-panel shutter-panel-bottom"></div>
-  <div class="shutter-panel shutter-panel-left"></div>
-  <div class="lens-vignette"></div>
-</div>
+@if (showNavigation()) {
+  <div class="camera-shutter" [class.active]="shutterActive()">
+    <div class="shutter-panel shutter-panel-top"></div>
+    <div class="shutter-panel shutter-panel-right"></div>
+    <div class="shutter-panel shutter-panel-bottom"></div>
+    <div class="shutter-panel shutter-panel-left"></div>
+    <div class="lens-vignette"></div>
+  </div>
+}

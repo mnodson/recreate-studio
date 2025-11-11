@@ -14,6 +14,7 @@ import { filter } from 'rxjs/operators';
 export class App {
   private router = inject(Router);
   shutterActive = signal(false);
+  showNavigation = signal(true);
 
   constructor() {
     // Listen to navigation events
@@ -30,6 +31,17 @@ export class App {
       } else {
         // Delay removing the active state to let animation complete
         setTimeout(() => this.shutterActive.set(false), 600);
+      }
+
+      // Hide navigation and shutter animation for shared gallery route
+      if (event instanceof NavigationEnd) {
+        const isSharedGallery = event.url.includes('/gallery/shared/');
+        this.showNavigation.set(!isSharedGallery);
+
+        // Don't show shutter animation for shared galleries
+        if (isSharedGallery) {
+          this.shutterActive.set(false);
+        }
       }
     });
   }

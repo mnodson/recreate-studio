@@ -32,11 +32,12 @@ import { ImageService } from '../../services/image.service';
                 subject.
               </p>
               <p>
-                Based in the heart of Texas, I work with individuals, families, and
-                businesses to create stunning visual narratives. Whether it's capturing
-                the authentic joy of a family gathering, the bold confidence of a senior
-                portrait, or the professional polish of a business headshot, I approach
-                each session with creativity, patience, and attention to detail.
+I'm Laura Hoffman, homeschool mom, runner, bass player and photographer. My husband gifted me my first DSLR camera over 15 years ago just before the birth of our first daughter knowing I would want to capture every moment I could. I fell in love with photography and wanted other moms to have those same treasured moments documented photographically. So with a baby on my hip, I set out to snap those precious moments and grow Laura Hoffman Photography.
+<br><br>
+Now that my babies are grown, I am relaunching my business with a fresh new look and a new name. Welcome to (RE)create Studio!
+<br><br>
+I specialize in natural light photography. I am available for family, senior, sports and special events. 
+
               </p>
               <!-- <div class="credentials">
                 <h3>Background</h3>
@@ -111,7 +112,7 @@ import { ImageService } from '../../services/image.service';
             <div class="approach-image">
               <div class="carousel-track" [style.transform]="'translateX(-' + (currentImageIndex() * 100) + '%)'">
                 <img
-                  *ngFor="let image of bioImages"
+                  *ngFor="let image of bioImages.reverse()"
                   [src]="imageService.getImageUrl(image)"
                   alt="Behind the Scenes"
                   class="bts-image"
@@ -148,7 +149,7 @@ export class AboutComponent implements OnInit, OnDestroy {
     'bio/bio-004.jpg'
   ];
 
-  constructor(public imageService: ImageService) {}
+  constructor(public imageService: ImageService) { }
 
   ngOnInit(): void {
     // Rotate through images every 5 seconds
