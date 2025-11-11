@@ -13,18 +13,14 @@ import { ImageService } from '../../services/image.service';
         <div class="container">
           <div class="about-content">
             <div class="about-image">
-              <img
-                [src]="imageService.getImageUrl(getCurrentImage())"
-                alt="Laura Hoffman - Photographer"
-                class="portrait-image portrait-slot-1"
-                [class.visible]="showingFirstSlot()"
-                (error)="onImageError($event)">
-              <img
-                [src]="imageService.getImageUrl(getPreviousImage())"
-                alt="Laura Hoffman - Photographer"
-                class="portrait-image portrait-slot-2"
-                [class.visible]="!showingFirstSlot()"
-                (error)="onImageError($event)">
+              <div class="carousel-track" [style.transform]="'translateX(-' + (currentImageIndex() * 100) + '%)'">
+                <img
+                  *ngFor="let image of bioImages"
+                  [src]="imageService.getImageUrl(image)"
+                  alt="Laura Hoffman - Photographer"
+                  class="portrait-image"
+                  (error)="onImageError($event)">
+              </div>
             </div>
             <div class="about-text">
               <h1>About the Artist</h1>
@@ -113,18 +109,14 @@ import { ImageService } from '../../services/image.service';
               </div>
             </div>
             <div class="approach-image">
-              <img
-                [src]="imageService.getImageUrl(bioImages[(currentImageIndex() + 2) % bioImages.length])"
-                alt="Behind the Scenes"
-                class="bts-image bts-slot-1"
-                [class.visible]="showingFirstSlot()"
-                (error)="onImageError($event)">
-              <img
-                [src]="imageService.getImageUrl(bioImages[(currentImageIndex() + 1) % bioImages.length])"
-                alt="Behind the Scenes"
-                class="bts-image bts-slot-2"
-                [class.visible]="!showingFirstSlot()"
-                (error)="onImageError($event)">
+              <div class="carousel-track" [style.transform]="'translateX(-' + (currentImageIndex() * 100) + '%)'">
+                <img
+                  *ngFor="let image of bioImages"
+                  [src]="imageService.getImageUrl(image)"
+                  alt="Behind the Scenes"
+                  class="bts-image"
+                  (error)="onImageError($event)">
+              </div>
             </div>
           </div>
         </div>
@@ -147,7 +139,6 @@ import { ImageService } from '../../services/image.service';
 export class AboutComponent implements OnInit, OnDestroy {
   private intervalId?: number;
   currentImageIndex = signal(0);
-  showingFirstSlot = signal(true);
 
   // Bio images from the bio folder
   bioImages = [
@@ -162,10 +153,7 @@ export class AboutComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     // Rotate through images every 5 seconds
     this.intervalId = window.setInterval(() => {
-      // Move to next image
       this.currentImageIndex.set((this.currentImageIndex() + 1) % this.bioImages.length);
-      // Toggle which slot is showing
-      this.showingFirstSlot.set(!this.showingFirstSlot());
     }, 5000);
   }
 
@@ -173,15 +161,6 @@ export class AboutComponent implements OnInit, OnDestroy {
     if (this.intervalId) {
       clearInterval(this.intervalId);
     }
-  }
-
-  getCurrentImage(): string {
-    return this.bioImages[this.currentImageIndex()];
-  }
-
-  getPreviousImage(): string {
-    const prevIndex = (this.currentImageIndex() - 1 + this.bioImages.length) % this.bioImages.length;
-    return this.bioImages[prevIndex];
   }
 
   /**
