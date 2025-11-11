@@ -27,7 +27,7 @@ import { PersonalGallery } from '../../models/gallery.model';
                 placeholder="Enter password"
                 class="password-input"
                 autofocus
-                autofill=false>
+                autocomplete="off">
               <div class="button-group">
                 <button type="submit" class="btn-primary">Access Gallery</button>
               </div>

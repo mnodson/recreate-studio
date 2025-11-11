@@ -386,7 +386,7 @@ export class PersonalGalleryService {
   private generateShareUrl(shareToken: string): string {
     // In production, this should use your actual domain
     const baseUrl = window.location.origin;
-    return `${baseUrl}/gallery/shared/${shareToken}`;
+    return `${baseUrl}/#/gallery/shared/${shareToken}`;
   }
 
   /**
