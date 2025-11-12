@@ -118,7 +118,7 @@ import {
               (change)="onFilesSelected($event)"
               #fileInput
               class="file-input">
-            <small>Select JPEG, PNG, GIF, or WebP images (max 10MB each)</small>
+            <small>Select JPEG, PNG, GIF, or WebP images (max 25MB each)</small>
           </div>
 
           @if (generatingThumbnails()) {
@@ -210,7 +210,7 @@ import {
                   </div>
                   <div class="status-content">
                     <strong>Images Deploying...</strong>
-                    <p>Your images are being published to GitHub Pages. The gallery will be ready to view in a few moments.</p>
+                    <p>Your images are being published. The gallery will be ready to view in a few moments.</p>
                   </div>
                 }
                 @if (deploymentStatus() === 'ready') {

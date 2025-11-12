@@ -216,8 +216,8 @@ export class GithubUploadService {
       };
     }
 
-    // Check file size (max 10MB)
-    const maxSize = 10 * 1024 * 1024; // 10MB
+    // Check file size (max 25MB)
+    const maxSize = 25 * 1024 * 1024; // 25MB
     if (file.size > maxSize) {
       return {
         valid: false,

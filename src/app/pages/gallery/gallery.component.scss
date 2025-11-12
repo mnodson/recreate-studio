@@ -273,6 +273,226 @@
   }
 }
 
+// Lightbox styles
+.lightbox {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 2rem;
+  animation: fadeIn 0.2s ease;
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  .lightbox-image {
+    max-width: 90vw;
+    max-height: 85vh;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    animation: scaleIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    @keyframes scaleIn {
+      from {
+        transform: scale(0.95);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+  }
+
+  .lightbox-close,
+  .lightbox-prev,
+  .lightbox-next {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    z-index: 10001;
+
+    &:hover {
+      background: rgba(192, 132, 252, 0.3);
+      border-color: rgba(192, 132, 252, 0.6);
+      transform: scale(1.1);
+    }
+
+    svg {
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+    }
+  }
+
+  .lightbox-close {
+    top: 2rem;
+    right: 2rem;
+
+    @media (max-width: 768px) {
+      top: 1rem;
+      right: 1rem;
+      width: 40px;
+      height: 40px;
+
+      svg {
+        width: 24px;
+        height: 24px;
+      }
+    }
+  }
+
+  .lightbox-prev {
+    left: 2rem;
+    top: 50%;
+    transform: translateY(-50%);
+
+    &:hover {
+      transform: translateY(-50%) scale(1.1);
+    }
+
+    @media (max-width: 768px) {
+      left: 1rem;
+      width: 40px;
+      height: 40px;
+
+      svg {
+        width: 24px;
+        height: 24px;
+      }
+    }
+  }
+
+  .lightbox-next {
+    right: 2rem;
+    top: 50%;
+    transform: translateY(-50%);
+
+    &:hover {
+      transform: translateY(-50%) scale(1.1);
+    }
+
+    @media (max-width: 768px) {
+      right: 1rem;
+      width: 40px;
+      height: 40px;
+
+      svg {
+        width: 24px;
+        height: 24px;
+      }
+    }
+  }
+
+  .lightbox-info {
+    position: absolute;
+    bottom: 6rem;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    color: white;
+    max-width: 600px;
+    padding: 1rem 2rem;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+
+    h3 {
+      font-size: 1.5rem;
+      font-weight: 300;
+      color: #e6d7ff;
+      margin-bottom: 0.5rem;
+    }
+
+    p {
+      color: #b8a9d1;
+      font-weight: 300;
+    }
+
+    @media (max-width: 768px) {
+      bottom: 5rem;
+      padding: 0.75rem 1.5rem;
+      max-width: calc(100% - 2rem);
+
+      h3 {
+        font-size: 1.2rem;
+      }
+
+      p {
+        font-size: 0.9rem;
+      }
+    }
+  }
+
+  .lightbox-counter {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    color: white;
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+
+    @media (max-width: 768px) {
+      bottom: 1rem;
+      font-size: 0.9rem;
+    }
+  }
+}
+
+// Add cursor pointer and hover effect to gallery items
+.gallery-item {
+  cursor: pointer;
+
+  .image-overlay {
+    .zoom-icon {
+      position: absolute;
+      bottom: 1rem;
+      right: 1rem;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(192, 132, 252, 0.2);
+      border-radius: 50%;
+      transition: all 0.3s ease;
+
+      svg {
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+      }
+    }
+  }
+
+  &:hover .image-overlay .zoom-icon {
+    background: rgba(192, 132, 252, 0.4);
+    transform: scale(1.1);
+  }
+}
+
 @media (max-width: 768px) {
   .gallery-header h1 {
     font-size: 2.5rem;

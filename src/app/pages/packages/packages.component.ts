@@ -107,76 +107,66 @@ export class PackagesComponent {
   packages: Package[] = [
     {
       id: 1,
-      name: 'Essential',
+      name: 'Mini Session',
       category: 'Portrait Session',
-      price: '$350',
-      duration: '1 Hour',
-      description: 'Perfect for individual portraits, couples, or small families',
+      price: '$95',
+      duration: '30 Min',
+      description: 'Great for seasonal or holiday celebrations',
       features: [
-        '1-hour photography session',
-        '1 outfit change',
-        '25 edited high-resolution images',
-        'Online gallery for viewing and downloading',
-        'Print release included'
+        '30 min photography session',
+        'At least 5 edited high-resolution images',
+        'Online gallery for viewing'
       ],
       popular: false
     },
     {
       id: 2,
-      name: 'Premium',
-      category: 'Portrait Session',
-      price: '$550',
-      duration: '1.5 Hours',
-      description: 'Extended session with multiple looks and locations',
+      name: 'Seniors',
+      category: 'Senior Portraits',
+      price: '$495',
+      duration: '2 Hours',
+      description: 'Celebrate your senior year with bold, creative portraits',
       features: [
-        '1.5-hour photography session',
-        '3 outfit changes',
-        '50 edited high-resolution images',
+        '2-hour photography session',
+        '2 outfit changes',
+        '25 edited high-resolution images',
         'Online gallery with slideshow',
-        'Print release included',
-        '5 premium prints (8x10)',
-        'Location scouting assistance'
+        'Optional locations'
       ],
-      popular: true
+      popular: false
     },
     {
       id: 3,
-      name: 'Senior Photography',
-      category: 'Senior Portraits',
-      price: '$275',
-      duration: '1 Hour',
-      description: 'Celebrate your senior year with bold, creative portraits',
+      name: 'Essential',
+      category: 'Portrait Session',
+      price: '$495',
+      duration: '1.5 Hours',
+      description: 'Perfect for individual portraits, couples, or small families',
       features: [
-        '1-hour portrait session',
-        '2 outfit changes',
-        '30 edited high-resolution images',
+        '1.5-hour portrait session',
+        '1 outfit changes',
+        '25 edited high-resolution images',
         'Multiple location options',
-        'Cap and gown photos included',
-        'Online gallery for sharing',
-        'Print release included'
+        'Online gallery for sharing'
       ],
-      popular: true,
-      additionalInfo: 'Bring friends for group shots'
+      popular: false,
+      //additionalInfo: 'Bring friends for group shots'
     },
     {
       id: 4,
-      name: 'Boudoir Experience',
-      category: 'Boudoir Photography',
-      price: '$450',
+      name: 'Premium',
+      category: 'Portrait Session',
+      price: '$625',
       duration: '2 Hours',
-      description: 'Elegant and empowering boudoir portraits in a comfortable setting',
+      description: 'Perfect for larger families, or groups of families',
       features: [
         '2-hour private session',
-        'Professional hair and makeup',
+        '3 outfit changes',
         '40 edited high-resolution images',
-        'Multiple wardrobe changes',
         'Private online gallery',
-        'Print release included',
-        'Luxury gift box option available',
-        'Styling consultation included'
       ],
       popular: false,
-      additionalInfo: 'Private studio setting with professional guidance'
+      additionalInfo: 'Bring friends for group shots'
     },
     {
       id: 5,
@@ -232,21 +222,6 @@ export class PackagesComponent {
       name: 'Rush Editing',
       description: 'Receive your edited images within 48 hours',
       price: '+$200'
-    },
-    {
-      name: 'Professional Prints',
-      description: 'High-quality prints delivered to your door',
-      price: 'Starting at $25'
-    },
-    {
-      name: 'Custom Album Design',
-      description: 'Professional album layout and design service',
-      price: '+$300'
-    },
-    {
-      name: 'Video Highlights',
-      description: 'Short highlight video of your session or event',
-      price: '+$400'
     }
   ];
 

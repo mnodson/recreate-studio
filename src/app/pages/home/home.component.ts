@@ -19,7 +19,7 @@ import { ImageService } from '../../services/image.service';
         </div>
         <div class="hero-image">
           <img
-            [src]="imageService.getImageUrl('portraits/portraits-006.jpg')"
+            [src]="imageService.getImageUrl('portfolio/Events/Events005.jpg')"
             alt="Featured Photography"
             class="hero-photo"
             (error)="onImageError($event)">
@@ -88,7 +88,7 @@ export class HomeComponent {
       title: 'Family Portraits',
       description: 'Authentic moments of laughter, love, and connection. Beautifully preserved memories that grow more precious with every passing year',
       category: 'Family',
-      imageUrl: 'family/family-001.jpg'
+      imageUrl: 'family/family-005.jpg'
     },
     {
       title: 'Sports Photography',
