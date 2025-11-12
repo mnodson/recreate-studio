@@ -41,3 +41,8 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
+
+# Environment files with secrets
+# Note: environment.ts and environment.production.ts are tracked, but be careful not to commit real tokens
+# Only commit these files with placeholder tokens like 'YOUR_GITHUB_PAT_HERE' or '${GITHUB_UPLOAD_TOKEN}'
+src/environments/environment.local.ts
