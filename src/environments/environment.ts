@@ -22,10 +22,18 @@ export const environment: Environment = {
   // GitHub configuration for image uploads
   // Generate a Personal Access Token at: https://github.com/settings/tokens
   // Required permissions: Contents (Read and Write)
+  // IMPORTANT: For local development, replace 'YOUR_GITHUB_PAT_HERE' with your actual PAT
+  // Never commit your actual token to the repository
   github: {
     owner: 'mnodson',
     repo: 'recreate-studio-images',
     branch: 'main',
-    token: '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' // Replace with your GitHub PAT
-  }
+    token: '' // Replace with your GitHub PAT for local development
+  },
+
+  // Admin access control - only these email addresses can access the admin panel
+  allowedAdminEmails: [
+    'mark.nodson@gmail.com' // Mark
+    ,'barnthson@gmail.com' // Laura
+  ]
 };
