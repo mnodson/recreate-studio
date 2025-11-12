@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PersonalGalleryService } from '../../services/personal-gallery.service';
@@ -103,13 +103,26 @@ import {
             <small>Select JPEG, PNG, GIF, or WebP images (max 10MB each)</small>
           </div>
 
-          @if (imagePreviews().length > 0) {
+          @if (generatingThumbnails()) {
+            <div class="form-group">
+              <div class="thumbnail-loading">
+                <div class="progress-spinner"></div>
+                <span>Generating thumbnails for {{ selectedFiles().length }} images...</span>
+              </div>
+            </div>
+          }
+
+          @if (imagePreviews().length > 0 && !generatingThumbnails()) {
             <div class="form-group">
               <label>Selected Images ({{ selectedFiles().length }})</label>
-              <div class="image-previews">
+              <div class="image-previews" [style.--thumbnail-size.px]="thumbnailSize()">
                 @for (preview of imagePreviews(); track preview; let i = $index) {
                   <div class="preview-item">
-                    <img [src]="preview" [alt]="selectedFiles()[i].name">
+                    <img
+                      [src]="preview"
+                      [alt]="selectedFiles()[i].name"
+                      loading="lazy"
+                      decoding="async">
                     <div class="preview-overlay">
                       <span class="preview-filename">{{ selectedFiles()[i].name }}</span>
                       <button type="button" class="btn-remove" (click)="removeFile(i)">×</button>
@@ -155,9 +168,19 @@ import {
                 [value]="createdShareUrl()"
                 readonly
                 #shareUrlInput>
-              <button type="button" class="btn-copy" (click)="copyToClipboard(shareUrlInput)">
-                Copy Link
-              </button>
+              <div class="button-group">
+                <button type="button" class="btn-copy" (click)="copyToClipboard(shareUrlInput)">
+                  Copy Link
+                </button>
+                <button type="button" class="btn-view" (click)="openGallery(createdShareUrl())">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                    <polyline points="15 3 21 3 21 9"></polyline>
+                    <line x1="10" y1="14" x2="21" y2="3"></line>
+                  </svg>
+                  View
+                </button>
+              </div>
             </div>
           </div>
         </section>
@@ -276,9 +299,19 @@ import {
                     [value]="getShareUrl(gallery.shareToken)"
                     readonly
                     #galleryShareUrl>
-                  <button class="btn-copy" (click)="copyToClipboard(galleryShareUrl)">
-                    Copy
-                  </button>
+                  <div class="button-group">
+                    <button class="btn-copy" (click)="copyToClipboard(galleryShareUrl)">
+                      Copy
+                    </button>
+                    <button class="btn-view" (click)="openGallery(getShareUrl(gallery.shareToken))">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                        <polyline points="15 3 21 3 21 9"></polyline>
+                        <line x1="10" y1="14" x2="21" y2="3"></line>
+                      </svg>
+                      View
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -330,7 +363,7 @@ import {
   `,
   styleUrls: ['./gallery-admin.component.scss']
 })
-export class GalleryAdminComponent implements OnInit {
+export class GalleryAdminComponent implements OnInit, OnDestroy {
   galleries = signal<PersonalGallery[]>([]);
   stats = signal<GalleryStats | null>(null);
   loading = signal(true);
@@ -345,6 +378,16 @@ export class GalleryAdminComponent implements OnInit {
   uploading = signal(false);
   uploadProgress = signal<string>('');
   imagePreviews = signal<string[]>([]);
+  generatingThumbnails = signal(false);
+
+  // Computed thumbnail size based on image count
+  thumbnailSize = () => {
+    const count = this.selectedFiles().length;
+    if (count <= 14) return 150;
+    if (count <= 21) return 100;
+    if (count <= 35) return 75;
+    return 60; // For very large sets
+  };
 
   newGallery: Partial<CreateGalleryRequest> = {
     title: '',
@@ -366,6 +409,11 @@ export class GalleryAdminComponent implements OnInit {
   ngOnInit() {
     this.loadGalleries();
     this.loadStats();
+  }
+
+  ngOnDestroy() {
+    // Clean up object URLs to prevent memory leaks
+    this.imagePreviews().forEach(url => URL.revokeObjectURL(url));
   }
 
   loadGalleries() {
@@ -405,6 +453,9 @@ export class GalleryAdminComponent implements OnInit {
   }
 
   private resetForm() {
+    // Clean up object URLs before resetting
+    this.imagePreviews().forEach(url => URL.revokeObjectURL(url));
+
     // Reset form fields
     this.newGallery = {
       title: '',
@@ -418,11 +469,15 @@ export class GalleryAdminComponent implements OnInit {
     this.selectedFiles.set([]);
     this.imagePreviews.set([]);
     this.uploadProgress.set('');
+    this.generatingThumbnails.set(false);
   }
 
   onFilesSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     if (!input.files || input.files.length === 0) return;
+
+    // Revoke old object URLs to prevent memory leaks
+    this.imagePreviews().forEach(url => URL.revokeObjectURL(url));
 
     const files = Array.from(input.files);
     const validFiles: File[] = [];
@@ -441,25 +496,89 @@ export class GalleryAdminComponent implements OnInit {
   }
 
   private generateImagePreviews(files: File[]) {
-    const previews: string[] = [];
-    let loaded = 0;
+    // Generate actual thumbnail images for better rendering performance
+    this.generatingThumbnails.set(true);
+    const thumbnailPromises = files.map(file => this.createThumbnail(file));
 
-    files.forEach(file => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        previews.push(e.target?.result as string);
-        loaded++;
-        if (loaded === files.length) {
-          this.imagePreviews.set(previews);
+    Promise.all(thumbnailPromises).then(thumbnails => {
+      this.imagePreviews.set(thumbnails);
+      this.generatingThumbnails.set(false);
+    }).catch(error => {
+      console.error('Error generating thumbnails:', error);
+      this.generatingThumbnails.set(false);
+    });
+  }
+
+  private async createThumbnail(file: File): Promise<string> {
+    return new Promise((resolve) => {
+      const img = new Image();
+      const objectUrl = URL.createObjectURL(file);
+
+      img.onload = () => {
+        // Clean up the temporary object URL
+        URL.revokeObjectURL(objectUrl);
+
+        // Create canvas for thumbnail
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d')!;
+
+        // Dynamic thumbnail size based on image count
+        // More images = smaller thumbnails for better performance
+        const count = this.selectedFiles().length;
+        let maxSize = 300;
+        if (count > 21) maxSize = 200;
+        if (count > 35) maxSize = 150;
+
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > maxSize) {
+            height = (height * maxSize) / width;
+            width = maxSize;
+          }
+        } else {
+          if (height > maxSize) {
+            width = (width * maxSize) / height;
+            height = maxSize;
+          }
         }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        // Draw scaled image
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Convert to blob URL with adaptive quality
+        // Lower quality for large sets to save memory
+        const quality = count > 35 ? 0.75 : 0.85;
+        canvas.toBlob((blob) => {
+          if (blob) {
+            resolve(URL.createObjectURL(blob));
+          } else {
+            // Fallback to original if blob creation fails
+            resolve(URL.createObjectURL(file));
+          }
+        }, 'image/jpeg', quality);
       };
-      reader.readAsDataURL(file);
+
+      img.onerror = () => {
+        // Fallback to original on error
+        URL.revokeObjectURL(objectUrl);
+        resolve(URL.createObjectURL(file));
+      };
+
+      img.src = objectUrl;
     });
   }
 
   removeFile(index: number) {
     const files = [...this.selectedFiles()];
     const previews = [...this.imagePreviews()];
+
+    // Revoke the object URL to prevent memory leak
+    URL.revokeObjectURL(previews[index]);
 
     files.splice(index, 1);
     previews.splice(index, 1);
@@ -639,6 +758,10 @@ export class GalleryAdminComponent implements OnInit {
 
   dismissSuccess() {
     this.createdShareUrl.set('');
+  }
+
+  openGallery(url: string) {
+    window.open(url, '_blank');
   }
 
   isExpired(gallery: PersonalGallery): boolean {

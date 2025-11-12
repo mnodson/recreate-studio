@@ -152,15 +152,37 @@
   }
 }
 
+// Thumbnail Loading
+.thumbnail-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 3rem;
+  text-align: center;
+
+  p {
+    color: #666;
+    font-size: 1rem;
+  }
+}
+
 // Image Grid
 .image-grid {
+  --thumbnail-size: 300px; /* Default, overridden dynamically */
+
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(var(--thumbnail-size), 1fr));
   gap: 1.5rem;
   margin-bottom: 3rem;
 
+  /* GPU acceleration for smooth scrolling */
+  transform: translateZ(0);
+
+  /* Smooth transition when grid size changes */
+  transition: grid-template-columns 0.3s ease;
+
   @media (max-width: 768px) {
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: 1rem;
   }
 
@@ -177,11 +199,33 @@
   aspect-ratio: 4 / 3;
   background: #f0f0f0;
 
+  /* Critical performance optimizations */
+  content-visibility: auto;
+  contain-intrinsic-size: var(--thumbnail-size) calc(var(--thumbnail-size) * 0.75);
+  contain: layout style paint;
+
+  /* GPU acceleration */
+  transform: translateZ(0);
+  backface-visibility: hidden;
+
+  /* Disable transitions by default for better scroll performance */
+  transition: none;
+
+  @media (hover: hover) {
+    transition: transform 0.2s ease;
+  }
+
   img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.3s ease;
+    display: block;
+
+    /* Image rendering optimizations */
+    image-rendering: auto;
+
+    /* GPU acceleration */
+    transform: translateZ(0);
   }
 
   .image-overlay {
@@ -195,16 +239,23 @@
     align-items: center;
     justify-content: center;
     opacity: 0;
-    transition: opacity 0.3s ease;
+
+    /* Performance: use transform for opacity changes */
+    will-change: opacity;
+    transition: opacity 0.2s;
+    pointer-events: none;
   }
 
   &:hover {
-    img {
-      transform: scale(1.05);
-    }
-
     .image-overlay {
       opacity: 1;
+      pointer-events: auto;
+    }
+  }
+
+  @media (hover: hover) {
+    &:hover img {
+      transform: translateZ(0) scale(1.05);
     }
   }
 }
