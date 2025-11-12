@@ -182,6 +182,46 @@ import {
                 </button>
               </div>
             </div>
+
+            <!-- Deployment Status -->
+            @if (deploymentStatus()) {
+              <div class="deployment-status" [class.status-ready]="deploymentStatus() === 'ready'" [class.status-error]="deploymentStatus() === 'error'">
+                @if (deploymentStatus() === 'checking' || deploymentStatus() === 'deploying') {
+                  <div class="status-icon">
+                    <div class="loading-spinner"></div>
+                  </div>
+                  <div class="status-content">
+                    <strong>Images Deploying...</strong>
+                    <p>Your images are being published to GitHub Pages. The gallery will be ready to view in a few moments.</p>
+                  </div>
+                }
+                @if (deploymentStatus() === 'ready') {
+                  <div class="status-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                      <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                  </div>
+                  <div class="status-content">
+                    <strong>Gallery Ready!</strong>
+                    <p>Your images are now live and the gallery is ready to view.</p>
+                  </div>
+                }
+                @if (deploymentStatus() === 'error') {
+                  <div class="status-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <line x1="12" y1="8" x2="12" y2="12"></line>
+                      <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                  </div>
+                  <div class="status-content">
+                    <strong>Deployment Check Timeout</strong>
+                    <p>The gallery has been created, but we couldn't confirm the images are live. Please check back in a few minutes.</p>
+                  </div>
+                }
+              </div>
+            }
           </div>
         </section>
       }
@@ -380,6 +420,12 @@ export class GalleryAdminComponent implements OnInit, OnDestroy {
   imagePreviews = signal<string[]>([]);
   generatingThumbnails = signal(false);
 
+  // Deployment status
+  deploymentStatus = signal<'checking' | 'deploying' | 'ready' | 'error' | null>(null);
+  private deploymentCheckInterval: any = null;
+  private deploymentCheckAttempts = 0;
+  private maxDeploymentCheckAttempts = 60; // 5 minutes max (60 * 5 seconds)
+
   // Computed thumbnail size based on image count
   thumbnailSize = () => {
     const count = this.selectedFiles().length;
@@ -414,6 +460,11 @@ export class GalleryAdminComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     // Clean up object URLs to prevent memory leaks
     this.imagePreviews().forEach(url => URL.revokeObjectURL(url));
+
+    // Clear deployment check interval
+    if (this.deploymentCheckInterval) {
+      clearInterval(this.deploymentCheckInterval);
+    }
   }
 
   loadGalleries() {
@@ -638,6 +689,9 @@ export class GalleryAdminComponent implements OnInit, OnDestroy {
             this.loadStats();
             this.showToastMessage(`Gallery created successfully with ${imageUrls.length} images!`);
 
+            // Start checking deployment status
+            this.startDeploymentCheck(imageUrls[0]);
+
             // Scroll to success message
             setTimeout(() => {
               document.querySelector('.success-banner')?.scrollIntoView({ behavior: 'smooth' });
@@ -660,6 +714,62 @@ export class GalleryAdminComponent implements OnInit, OnDestroy {
         this.uploadProgress.set('');
       }
     });
+  }
+
+  private startDeploymentCheck(firstImagePath: string) {
+    // Clear any existing interval
+    if (this.deploymentCheckInterval) {
+      clearInterval(this.deploymentCheckInterval);
+    }
+
+    // Reset attempt counter
+    this.deploymentCheckAttempts = 0;
+    this.deploymentStatus.set('checking');
+
+    // Check immediately
+    this.checkImageDeployment(firstImagePath);
+
+    // Then check every 5 seconds
+    this.deploymentCheckInterval = setInterval(() => {
+      this.checkImageDeployment(firstImagePath);
+    }, 5000);
+  }
+
+  private checkImageDeployment(imagePath: string) {
+    this.deploymentCheckAttempts++;
+
+    // Get the full image URL
+    const imageUrl = this.imageService.getImageUrl(imagePath);
+
+    // Try to load the image
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+
+    img.onload = () => {
+      // Image loaded successfully - deployment is complete
+      this.deploymentStatus.set('ready');
+      if (this.deploymentCheckInterval) {
+        clearInterval(this.deploymentCheckInterval);
+        this.deploymentCheckInterval = null;
+      }
+    };
+
+    img.onerror = () => {
+      // Image not accessible yet
+      if (this.deploymentCheckAttempts >= this.maxDeploymentCheckAttempts) {
+        // Max attempts reached - stop checking and show error
+        this.deploymentStatus.set('error');
+        if (this.deploymentCheckInterval) {
+          clearInterval(this.deploymentCheckInterval);
+          this.deploymentCheckInterval = null;
+        }
+      } else {
+        // Still deploying
+        this.deploymentStatus.set('deploying');
+      }
+    };
+
+    img.src = imageUrl + '?t=' + Date.now(); // Add cache buster
   }
 
   extendGallery(id: string, days: number) {
@@ -758,6 +868,11 @@ export class GalleryAdminComponent implements OnInit, OnDestroy {
 
   dismissSuccess() {
     this.createdShareUrl.set('');
+    this.deploymentStatus.set(null);
+    if (this.deploymentCheckInterval) {
+      clearInterval(this.deploymentCheckInterval);
+      this.deploymentCheckInterval = null;
+    }
   }
 
   openGallery(url: string) {
