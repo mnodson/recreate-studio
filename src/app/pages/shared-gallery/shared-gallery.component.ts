@@ -48,45 +48,66 @@ import { PersonalGallery } from '../../models/gallery.model';
 
       <!-- Gallery Content -->
       @if (gallery() && !showPasswordPrompt()) {
-        <div class="gallery-content">
-          <header class="gallery-header">
-            <h1>{{ gallery()!.title }}</h1>
-            @if (gallery()!.description) {
-              <p class="description">
-                {{ gallery()!.description }}
-              </p>
-            }
-            <div class="gallery-meta">
-              <p class="client-name">For: {{ gallery()!.clientName }}</p>
-              <p class="expiration">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <polyline points="12 6 12 12 16 14"></polyline>
-                </svg>
-                Available until {{ gallery()!.expiresAt | date:'fullDate' }}
-              </p>
-              <p class="image-count">{{ gallery()!.imageUrls.length }} images</p>
+        <!-- Hero Section with Cover Image -->
+        @if (heroImageUrl()) {
+          <div class="hero-section">
+            <img
+              [src]="imageService.getImageUrl(heroImageUrl()!)"
+              [alt]="gallery()!.title"
+              class="hero-image">
+            <div class="hero-overlay">
+              <div class="hero-content">
+                <h1>{{ gallery()!.title }}</h1>
+                @if (gallery()!.description) {
+                  <p class="description">
+                    {{ gallery()!.description }}
+                  </p>
+                }
+                <div class="gallery-meta">
+                  <p class="client-name">For: {{ gallery()!.clientName }}</p>
+                  <p class="expiration">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                    Available until {{ gallery()!.expiresAt | date:'fullDate' }}
+                  </p>
+                  <p class="image-count">{{ gallery()!.imageUrls.length }} images</p>
+                </div>
+                <button class="btn-view-gallery" (click)="scrollToGallery()">
+                  View Gallery
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg>
+                </button>
+              </div>
             </div>
-          </header>
+          </div>
+        }
 
+        <div class="gallery-content" id="masonry-gallery">
+
+          <!-- Thumbnail Loading State -->
           @if (generatingThumbnails()) {
             <div class="thumbnail-loading">
               <div class="loading-spinner"></div>
-              <p>Generating optimized thumbnails...</p>
+              <p>Preparing gallery...</p>
             </div>
           }
 
-          @if (!generatingThumbnails()) {
-            <div class="image-grid" [style.--thumbnail-size.px]="thumbnailSize()">
-              @for (imageUrl of gallery()!.imageUrls; track imageUrl; let i = $index) {
+          <!-- Masonry Grid -->
+          @if (galleryImagesForMasonry().length > 0 && !generatingThumbnails()) {
+            <div class="masonry-grid">
+              @for (imageUrl of galleryImagesForMasonry(); track imageUrl; let i = $index) {
                 <div
-                  class="image-item"
+                  class="masonry-item"
                   (click)="openLightbox(i)">
                   <img
-                    [src]="thumbnails()[i] || imageService.getImageUrl(imageUrl)"
+                    [src]="getImageSrc(i, imageUrl)"
                     [alt]="gallery()!.title + ' - Image ' + (i + 1)"
                     loading="lazy"
-                    decoding="async">
+                    decoding="async"
+                    (error)="onImageError($event, imageUrl)">
                   <div class="image-overlay">
                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
                       <circle cx="11" cy="11" r="8"></circle>
@@ -172,14 +193,22 @@ export class SharedGalleryComponent implements OnInit, OnDestroy {
   thumbnails = signal<string[]>([]);
   generatingThumbnails = signal(false);
 
-  // Computed thumbnail size based on image count
+  // Computed thumbnail size based on image count and viewport
+  // For masonry layout, we want smaller thumbnails for better performance
   thumbnailSize = () => {
     const count = this.gallery()?.imageUrls.length || 0;
-    if (count <= 14) return 300;
-    if (count <= 21) return 250;
-    if (count <= 35) return 200;
-    return 180;
+    // Masonry columns are ~400px wide on desktop, so 400px thumbnails are perfect
+    if (count <= 14) return 400;
+    if (count <= 21) return 350;
+    if (count <= 35) return 300;
+    return 250;
   };
+
+  // Hero image (first landscape image)
+  heroImageUrl = signal<string | null>(null);
+
+  // Gallery images (all images for masonry grid)
+  galleryImagesForMasonry = signal<string[]>([]);
 
   constructor(
     private route: ActivatedRoute,
@@ -211,8 +240,8 @@ export class SharedGalleryComponent implements OnInit, OnDestroy {
         if (gallery) {
           this.gallery.set(gallery);
           this.showPasswordPrompt.set(false);
-          // Generate thumbnails after gallery loads
-          this.generateThumbnails();
+          // Find first landscape image for hero and set up gallery images
+          this.setupGalleryImages();
         } else {
           this.gallery.set(null);
         }
@@ -229,6 +258,45 @@ export class SharedGalleryComponent implements OnInit, OnDestroy {
           this.gallery.set(null);
         }
       }
+    });
+  }
+
+  private async setupGalleryImages() {
+    const gallery = this.gallery();
+    if (!gallery || gallery.imageUrls.length === 0) return;
+
+    // Find first landscape image for hero
+    let heroIndex = 0;
+    for (let i = 0; i < gallery.imageUrls.length; i++) {
+      const imageUrl = this.imageService.getImageUrl(gallery.imageUrls[i]);
+      const isLandscape = await this.isImageLandscape(imageUrl);
+      if (isLandscape) {
+        heroIndex = i;
+        break;
+      }
+    }
+
+    // Set hero image
+    this.heroImageUrl.set(gallery.imageUrls[heroIndex]);
+
+    // Set remaining images for masonry grid (all images, hero will be in the grid too for simplicity)
+    this.galleryImagesForMasonry.set(gallery.imageUrls);
+
+    // Generate thumbnails for masonry grid
+    this.generateThumbnails();
+  }
+
+  private isImageLandscape(imageUrl: string): Promise<boolean> {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        resolve(img.width > img.height);
+      };
+      img.onerror = () => {
+        resolve(true); // Default to landscape if error
+      };
+      img.src = imageUrl;
     });
   }
 
@@ -262,51 +330,66 @@ export class SharedGalleryComponent implements OnInit, OnDestroy {
   private async createThumbnail(imageUrl: string): Promise<string> {
     return new Promise((resolve) => {
       const img = new Image();
-      img.crossOrigin = 'anonymous';
 
+      // Try without CORS first for better compatibility with GitHub raw content
       img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d')!;
+        try {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
 
-        // Dynamic thumbnail size based on image count
-        const maxSize = this.thumbnailSize();
-        let width = img.width;
-        let height = img.height;
-
-        if (width > height) {
-          if (width > maxSize) {
-            height = (height * maxSize) / width;
-            width = maxSize;
-          }
-        } else {
-          if (height > maxSize) {
-            width = (width * maxSize) / height;
-            height = maxSize;
-          }
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-
-        // Draw scaled image
-        ctx.drawImage(img, 0, 0, width, height);
-
-        // Convert to blob URL with quality based on count
-        const count = this.gallery()?.imageUrls.length || 0;
-        const quality = count > 35 ? 0.75 : 0.85;
-
-        canvas.toBlob((blob) => {
-          if (blob) {
-            resolve(URL.createObjectURL(blob));
-          } else {
-            // Fallback to original URL
+          if (!ctx) {
+            console.warn('Could not get canvas context, using original image');
             resolve(imageUrl);
+            return;
           }
-        }, 'image/jpeg', quality);
+
+          // Dynamic thumbnail size based on image count
+          const maxSize = this.thumbnailSize();
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > maxSize) {
+              height = (height * maxSize) / width;
+              width = maxSize;
+            }
+          } else {
+            if (height > maxSize) {
+              width = (width * maxSize) / height;
+              height = maxSize;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+
+          // Draw scaled image
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // Convert to blob URL with quality based on count
+          const count = this.gallery()?.imageUrls.length || 0;
+          const quality = count > 35 ? 0.75 : 0.85;
+
+          canvas.toBlob((blob) => {
+            if (blob) {
+              const blobUrl = URL.createObjectURL(blob);
+              resolve(blobUrl);
+            } else {
+              // Fallback to original URL if blob creation fails
+              console.warn('Blob creation failed, using original image:', imageUrl);
+              resolve(imageUrl);
+            }
+          }, 'image/jpeg', quality);
+        } catch (error) {
+          // If canvas operations fail (e.g., due to CORS), use original image
+          console.warn('Canvas operation failed, using original image:', error);
+          resolve(imageUrl);
+        }
       };
 
-      img.onerror = () => {
+      img.onerror = (error) => {
         // Fallback to original on error
+        console.error('Image load failed:', imageUrl, error);
         resolve(imageUrl);
       };
 
@@ -336,6 +419,35 @@ export class SharedGalleryComponent implements OnInit, OnDestroy {
     event.stopPropagation();
     if (this.currentImageIndex() > 0) {
       this.currentImageIndex.set(this.currentImageIndex() - 1);
+    }
+  }
+
+  scrollToGallery() {
+    const galleryElement = document.getElementById('masonry-gallery');
+    if (galleryElement) {
+      galleryElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
+  getImageSrc(index: number, relativeUrl: string): string {
+    // Use thumbnail if available, otherwise use full image
+    const thumbnail = this.thumbnails()[index];
+    if (thumbnail && thumbnail.length > 0) {
+      return thumbnail;
+    }
+    return this.imageService.getImageUrl(relativeUrl);
+  }
+
+  onImageError(event: Event, relativeUrl: string): void {
+    // If thumbnail fails, try loading the original image
+    const img = event.target as HTMLImageElement;
+    const originalUrl = this.imageService.getImageUrl(relativeUrl);
+
+    if (img.src !== originalUrl) {
+      console.warn('Thumbnail failed to load, falling back to original:', img.src);
+      img.src = originalUrl;
+    } else {
+      console.error('Original image also failed to load:', originalUrl);
     }
   }
 }
