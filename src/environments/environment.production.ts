@@ -24,5 +24,11 @@ export const environment: Environment = {
     repo: 'recreate-studio-images',
     branch: 'main',
     token: '${GITHUB_UPLOAD_TOKEN}' // Will be replaced during build
-  }
+  },
+
+  // Admin access control - only these email addresses can access the admin panel
+  allowedAdminEmails: [
+    'mark.nodson@gmail.com' // Mark
+    ,'barnthson@gmail.com' // Laura
+  ]
 };

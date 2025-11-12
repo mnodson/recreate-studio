@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/home', pathMatch: 'full' },
@@ -19,8 +20,13 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/shared-gallery/shared-gallery.component').then(m => m.SharedGalleryComponent)
   },
   {
+    path: 'login',
+    loadComponent: () => import('./pages/login/login.component').then(m => m.LoginComponent)
+  },
+  {
     path: 'gallery-admin',
-    loadComponent: () => import('./pages/gallery-admin/gallery-admin.component').then(m => m.GalleryAdminComponent)
+    loadComponent: () => import('./pages/gallery-admin/gallery-admin.component').then(m => m.GalleryAdminComponent),
+    canActivate: [authGuard]
   },
   {
     path: 'packages',

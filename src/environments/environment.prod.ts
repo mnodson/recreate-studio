@@ -20,6 +20,12 @@ export const environment: Environment = {
     owner: 'mnodson',
     repo: 'recreate-studio-images',
     branch: 'main',
-    token: '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' // Use environment variable in production
-  }
+    token: '${GITHUB_UPLOAD_TOKEN}' // Use environment variable in production
+  },
+
+  // Admin access control - only these email addresses can access the admin panel
+  allowedAdminEmails: [
+    'mark.nodson@gmail.com' // Mark
+    ,'barnthson@gmail.com' // Laura
+  ]
 };

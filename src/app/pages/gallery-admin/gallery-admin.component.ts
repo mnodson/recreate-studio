@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { PersonalGalleryService } from '../../services/personal-gallery.service';
 import { ImageService } from '../../services/image.service';
 import { GithubUploadService } from '../../services/github-upload.service';
+import { AuthService } from '../../services/auth.service';
 import {
   PersonalGallery,
   GalleryStats,
@@ -17,10 +18,27 @@ import {
   template: `
     <div class="admin-container">
       <header class="admin-header">
-        <h1>Gallery Management</h1>
-        <button class="btn-primary" (click)="toggleCreateForm()">
-          {{ showCreateForm() ? 'Cancel' : 'Create New Gallery' }}
-        </button>
+        <div class="header-left">
+          <h1>Gallery Management</h1>
+          @if (authService.currentUser()) {
+            <div class="user-info">
+              <span class="user-email">{{ authService.currentUser()!.email }}</span>
+            </div>
+          }
+        </div>
+        <div class="header-actions">
+          <button class="btn-primary" (click)="toggleCreateForm()">
+            {{ showCreateForm() ? 'Cancel' : 'Create New Gallery' }}
+          </button>
+          <button class="btn-secondary" (click)="logout()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+              <polyline points="16 17 21 12 16 7"></polyline>
+              <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+            Logout
+          </button>
+        </div>
       </header>
 
       <!-- Create Gallery Form -->
@@ -449,7 +467,8 @@ export class GalleryAdminComponent implements OnInit, OnDestroy {
   constructor(
     private galleryService: PersonalGalleryService,
     public imageService: ImageService,
-    private githubUploadService: GithubUploadService
+    private githubUploadService: GithubUploadService,
+    public authService: AuthService
   ) {}
 
   ngOnInit() {
@@ -881,5 +900,13 @@ export class GalleryAdminComponent implements OnInit, OnDestroy {
 
   isExpired(gallery: PersonalGallery): boolean {
     return !gallery.isActive || new Date(gallery.expiresAt) < new Date();
+  }
+
+  async logout() {
+    try {
+      await this.authService.signOut();
+    } catch (error: any) {
+      this.showToastMessage('Failed to sign out: ' + error.message);
+    }
   }
 }

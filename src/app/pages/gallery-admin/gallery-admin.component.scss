@@ -12,6 +12,13 @@
   align-items: center;
   margin-bottom: 3rem;
   padding-top: 1.5rem;
+  gap: 2rem;
+
+  .header-left {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
 
   h1 {
     font-size: 2.5rem;
@@ -24,10 +31,37 @@
     background-clip: text;
   }
 
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    .user-email {
+      color: #b8a9d1;
+      font-size: 0.9rem;
+    }
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+
+    button svg {
+      width: 16px;
+      height: 16px;
+      margin-right: 0.5rem;
+    }
+  }
+
   @media (max-width: 768px) {
     flex-direction: column;
     gap: 1rem;
     align-items: stretch;
+
+    .header-actions {
+      flex-direction: column;
+    }
   }
 }
 

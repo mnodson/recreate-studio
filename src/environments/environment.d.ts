@@ -16,4 +16,5 @@ export interface Environment {
     branch: string;
     token: string;
   };
+  allowedAdminEmails: string[];
 }
