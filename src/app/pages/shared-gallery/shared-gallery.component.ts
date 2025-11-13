@@ -4,6 +4,7 @@ import { ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { PersonalGalleryService } from '../../services/personal-gallery.service';
 import { ImageService } from '../../services/image.service';
+import { AnalyticsService } from '../../services/analytics.service';
 import { PersonalGallery } from '../../models/gallery.model';
 
 @Component({
@@ -213,7 +214,8 @@ export class SharedGalleryComponent implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private galleryService: PersonalGalleryService,
-    public imageService: ImageService
+    public imageService: ImageService,
+    private analytics: AnalyticsService
   ) { }
 
   ngOnInit() {
@@ -240,6 +242,19 @@ export class SharedGalleryComponent implements OnInit, OnDestroy {
         if (gallery) {
           this.gallery.set(gallery);
           this.showPasswordPrompt.set(false);
+
+          // Track successful password if one was provided
+          if (password !== undefined) {
+            this.analytics.trackGalleryPasswordAttempt(shareToken, true);
+          }
+
+          // Track gallery view
+          this.analytics.trackGalleryView(
+            gallery.id || shareToken,
+            gallery.title,
+            gallery.imageUrls.length
+          );
+
           // Find first landscape image for hero and set up gallery images
           this.setupGalleryImages();
         } else {
@@ -252,9 +267,12 @@ export class SharedGalleryComponent implements OnInit, OnDestroy {
           this.showPasswordPrompt.set(true);
           if (password !== undefined) {
             this.passwordError.set('Incorrect password. Please try again.');
+            // Track failed password attempt
+            this.analytics.trackGalleryPasswordAttempt(shareToken, false);
           }
         } else {
           console.error('Error loading gallery:', error);
+          this.analytics.trackError(error.message, 'gallery_load');
           this.gallery.set(null);
         }
       }
@@ -313,16 +331,22 @@ export class SharedGalleryComponent implements OnInit, OnDestroy {
     if (!gallery) return;
 
     this.generatingThumbnails.set(true);
+    const startTime = performance.now();
 
     const thumbnailPromises = gallery.imageUrls.map(imageUrl =>
       this.createThumbnail(this.imageService.getImageUrl(imageUrl))
     );
 
     Promise.all(thumbnailPromises).then(thumbs => {
+      const duration = performance.now() - startTime;
       this.thumbnails.set(thumbs);
       this.generatingThumbnails.set(false);
+
+      // Track thumbnail generation performance
+      this.analytics.trackThumbnailGeneration(gallery.imageUrls.length, duration);
     }).catch(error => {
       console.error('Error generating thumbnails:', error);
+      this.analytics.trackError(error.message, 'thumbnail_generation');
       this.generatingThumbnails.set(false);
     });
   }
@@ -331,7 +355,9 @@ export class SharedGalleryComponent implements OnInit, OnDestroy {
     return new Promise((resolve) => {
       const img = new Image();
 
-      // Try without CORS first for better compatibility with GitHub raw content
+      // Enable CORS to avoid tainted canvas errors
+      img.crossOrigin = 'anonymous';
+
       img.onload = () => {
         try {
           const canvas = document.createElement('canvas');
@@ -401,6 +427,12 @@ export class SharedGalleryComponent implements OnInit, OnDestroy {
     this.currentImageIndex.set(index);
     this.showLightbox.set(true);
     document.body.style.overflow = 'hidden';
+
+    // Track lightbox open
+    const gallery = this.gallery();
+    if (gallery) {
+      this.analytics.trackImageLightboxOpen(index, gallery.imageUrls.length);
+    }
   }
 
   closeLightbox() {
@@ -411,14 +443,18 @@ export class SharedGalleryComponent implements OnInit, OnDestroy {
   nextImage(event: Event) {
     event.stopPropagation();
     if (this.gallery() && this.currentImageIndex() < this.gallery()!.imageUrls.length - 1) {
-      this.currentImageIndex.set(this.currentImageIndex() + 1);
+      const newIndex = this.currentImageIndex() + 1;
+      this.currentImageIndex.set(newIndex);
+      this.analytics.trackImageNavigation('next', newIndex);
     }
   }
 
   previousImage(event: Event) {
     event.stopPropagation();
     if (this.currentImageIndex() > 0) {
-      this.currentImageIndex.set(this.currentImageIndex() - 1);
+      const newIndex = this.currentImageIndex() - 1;
+      this.currentImageIndex.set(newIndex);
+      this.analytics.trackImageNavigation('previous', newIndex);
     }
   }
 
@@ -426,6 +462,12 @@ export class SharedGalleryComponent implements OnInit, OnDestroy {
     const galleryElement = document.getElementById('masonry-gallery');
     if (galleryElement) {
       galleryElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      // Track scroll to gallery
+      const gallery = this.gallery();
+      if (gallery) {
+        this.analytics.trackGalleryScrollToImages(gallery.id || 'unknown');
+      }
     }
   }
 
@@ -445,9 +487,11 @@ export class SharedGalleryComponent implements OnInit, OnDestroy {
 
     if (img.src !== originalUrl) {
       console.warn('Thumbnail failed to load, falling back to original:', img.src);
+      this.analytics.trackImageError(relativeUrl, 'thumbnail_load_failed');
       img.src = originalUrl;
     } else {
       console.error('Original image also failed to load:', originalUrl);
+      this.analytics.trackImageError(relativeUrl, 'image_load_failed');
     }
   }
 }

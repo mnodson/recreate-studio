@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { AnalyticsService } from '../../services/analytics.service';
 
 interface Package {
   id: number;
@@ -51,7 +52,7 @@ interface Package {
                   <p>{{ package.additionalInfo }}</p>
                 </div>
                 
-                <button class="package-btn">Book This Package</button>
+                <button class="package-btn" (click)="trackPackageInterest(package)">Book This Package</button>
               </div>
             </div>
           </div>
@@ -91,8 +92,8 @@ interface Package {
           <h2>Ready to Book?</h2>
           <p>Let's discuss your photography needs and create a custom package that fits your vision and budget.</p>
           <div class="contact-buttons">
-            <button class="btn-primary">Schedule Consultation</button>
-            <button class="btn-secondary">Get Custom Quote</button>
+            <button class="btn-primary" (click)="trackContactClick('consultation')">Schedule Consultation</button>
+            <button class="btn-secondary" (click)="trackContactClick('quote')">Get Custom Quote</button>
           </div>
           <div class="contact-info">
             <p>Call: (xxx) xxx-xxxx | Email: hello@recreatestudio.com</p>
@@ -103,7 +104,25 @@ interface Package {
   `,
   styleUrls: ['./packages.component.scss']
 })
-export class PackagesComponent {
+export class PackagesComponent implements OnInit {
+  constructor(private analytics: AnalyticsService) {}
+
+  ngOnInit() {
+    this.analytics.trackPageView('packages');
+  }
+
+  trackPackageInterest(pkg: Package) {
+    this.analytics.trackPackageView(pkg.name);
+    this.analytics.trackContactClick('form');
+  }
+
+  trackContactClick(type: string) {
+    if (type === 'consultation' || type === 'quote') {
+      this.analytics.trackContactClick('form');
+    }
+    this.analytics.trackCustomEvent('contact_interest', { type });
+  }
+
   packages: Package[] = [
     {
       id: 1,

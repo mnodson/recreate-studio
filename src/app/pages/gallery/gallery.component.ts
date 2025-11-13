@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ImageService } from '../../services/image.service';
+import { AnalyticsService } from '../../services/analytics.service';
 
 interface GalleryImage {
   id: number;
@@ -92,7 +93,7 @@ interface GalleryImage {
         <div class="container">
           <h2>Like What You See?</h2>
           <p>Let's discuss your photography needs and create something beautiful together.</p>
-          <button class="btn-primary" routerLink="/packages">Book a Session</button>
+          <button class="btn-primary" routerLink="/packages" (click)="trackNavigation('packages')">Book a Session</button>
         </div>
       </section>
 
@@ -169,7 +170,10 @@ export class GalleryComponent implements OnInit {
     'Sports': 'Sports'
   };
 
-  constructor(public imageService: ImageService) {}
+  constructor(
+    public imageService: ImageService,
+    private analytics: AnalyticsService
+  ) {}
 
   allImages: GalleryImage[] = [];
 
@@ -184,8 +188,13 @@ export class GalleryComponent implements OnInit {
   currentLightboxIndex = 0;
 
   ngOnInit() {
+    this.analytics.trackPageView('gallery');
     this.generateGalleryImages();
     this.filterGallery('all');
+  }
+
+  trackNavigation(destination: string) {
+    this.analytics.trackNavigation(destination);
   }
 
   /**
@@ -218,13 +227,16 @@ export class GalleryComponent implements OnInit {
   filterGallery(category: string) {
     this.selectedCategory = category;
     this.currentLoadIndex = 0;
-    
+
     if (category === 'all') {
       this._filteredImages = [...this.allImages];
     } else {
       this._filteredImages = this.allImages.filter(image => image.category === category);
     }
-    
+
+    // Track category filter
+    this.analytics.trackCustomEvent('gallery_filter', { category });
+
     this.loadInitialImages();
   }
 
@@ -236,12 +248,18 @@ export class GalleryComponent implements OnInit {
 
   loadMore() {
     const nextImages = this._filteredImages.slice(
-      this.currentLoadIndex, 
+      this.currentLoadIndex,
       this.currentLoadIndex + this.imagesPerLoad
     );
     this.displayedImages = [...this.displayedImages, ...nextImages];
     this.currentLoadIndex += this.imagesPerLoad;
     this.updateHasMoreImages();
+
+    // Track load more action
+    this.analytics.trackCustomEvent('gallery_load_more', {
+      category: this.selectedCategory,
+      total_loaded: this.displayedImages.length
+    });
   }
 
   updateHasMoreImages() {
@@ -256,6 +274,7 @@ export class GalleryComponent implements OnInit {
     const img = event.target as HTMLImageElement;
     img.style.display = 'none';
     console.warn('Failed to load gallery image:', img.src);
+    this.analytics.trackImageError(img.src, 'gallery_image_load_failed');
   }
 
   onImageLoad(event: Event): void {
@@ -272,6 +291,9 @@ export class GalleryComponent implements OnInit {
     this.currentLightboxIndex = index;
     this.showLightbox = true;
     document.body.style.overflow = 'hidden';
+
+    // Track lightbox open
+    this.analytics.trackImageLightboxOpen(index, this.displayedImages.length);
   }
 
   closeLightbox(): void {
@@ -283,6 +305,7 @@ export class GalleryComponent implements OnInit {
     event.stopPropagation();
     if (this.currentLightboxIndex < this.displayedImages.length - 1) {
       this.currentLightboxIndex++;
+      this.analytics.trackImageNavigation('next', this.currentLightboxIndex);
     }
   }
 
@@ -290,6 +313,7 @@ export class GalleryComponent implements OnInit {
     event.stopPropagation();
     if (this.currentLightboxIndex > 0) {
       this.currentLightboxIndex--;
+      this.analytics.trackImageNavigation('previous', this.currentLightboxIndex);
     }
   }
 

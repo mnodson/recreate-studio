@@ -1,7 +1,8 @@
-import { Component, signal } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { AnalyticsService } from '../../services/analytics.service';
 
 @Component({
   selector: 'app-login',
@@ -153,18 +154,23 @@ import { AuthService } from '../../services/auth.service';
     }
   `]
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   loading = signal(false);
   error = signal('');
 
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private analytics: AnalyticsService
   ) {
     // If already authenticated, redirect to admin
     if (this.authService.isAuthenticated()) {
       this.router.navigate(['/gallery-admin']);
     }
+  }
+
+  ngOnInit() {
+    this.analytics.trackPageView('login');
   }
 
   async signInWithGoogle() {
@@ -173,11 +179,16 @@ export class LoginComponent {
 
     try {
       await this.authService.signInWithGoogle();
+      // Track successful login
+      this.analytics.trackAdminLogin(true);
       // Redirect to admin page
       this.router.navigate(['/gallery-admin']);
     } catch (error: any) {
       this.error.set(error.message || 'Failed to sign in. Please try again.');
       this.loading.set(false);
+      // Track failed login
+      this.analytics.trackAdminLogin(false);
+      this.analytics.trackError(error.message || 'Login failed', 'admin_login');
     }
   }
 }

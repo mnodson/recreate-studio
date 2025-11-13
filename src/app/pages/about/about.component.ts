@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ImageService } from '../../services/image.service';
+import { AnalyticsService } from '../../services/analytics.service';
 
 @Component({
   selector: 'app-about',
@@ -128,8 +129,8 @@ I specialize in natural light photography. I am available for family, senior, sp
           <h2>Let's Create Something Beautiful Together</h2>
           <p>Ready to capture your special moments? I'd love to hear about your vision.</p>
           <div class="cta-buttons">
-            <button class="btn-primary" routerLink="/packages">View Packages</button>
-            <button class="btn-secondary" routerLink="/gallery">See My Work</button>
+            <button class="btn-primary" routerLink="/packages" (click)="trackNavigation('packages')">View Packages</button>
+            <button class="btn-secondary" routerLink="/gallery" (click)="trackNavigation('gallery')">See My Work</button>
           </div>
         </div>
       </section>
@@ -149,9 +150,14 @@ export class AboutComponent implements OnInit, OnDestroy {
     'bio/bio-004.jpg'
   ];
 
-  constructor(public imageService: ImageService) { }
+  constructor(
+    public imageService: ImageService,
+    private analytics: AnalyticsService
+  ) { }
 
   ngOnInit(): void {
+    this.analytics.trackPageView('about');
+
     // Rotate through images every 5 seconds
     this.intervalId = window.setInterval(() => {
       this.currentImageIndex.set((this.currentImageIndex() + 1) % this.bioImages.length);
@@ -164,6 +170,10 @@ export class AboutComponent implements OnInit, OnDestroy {
     }
   }
 
+  trackNavigation(destination: string) {
+    this.analytics.trackNavigation(destination);
+  }
+
   /**
    * Fallback handler for image loading errors
    */
@@ -171,5 +181,6 @@ export class AboutComponent implements OnInit, OnDestroy {
     const img = event.target as HTMLImageElement;
     img.style.display = 'none';
     console.warn('Failed to load image:', img.src);
+    this.analytics.trackImageError(img.src, 'about_image_load_failed');
   }
 }

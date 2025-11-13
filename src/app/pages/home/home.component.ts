@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ImageService } from '../../services/image.service';
+import { AnalyticsService } from '../../services/analytics.service';
 
 @Component({
   selector: 'app-home',
@@ -24,8 +25,8 @@ import { ImageService } from '../../services/image.service';
             class="hero-photo"
             (error)="onImageError($event)">
           <div class="mobile-cta-buttons">
-            <button class="btn-primary" routerLink="/gallery">View Gallery</button>
-            <button class="btn-secondary" routerLink="/packages">Book Session</button>
+            <button class="btn-primary" routerLink="/gallery" (click)="trackNavClick('gallery')">View Gallery</button>
+            <button class="btn-secondary" routerLink="/packages" (click)="trackNavClick('packages')">Book Session</button>
           </div>
         </div>
       </section>
@@ -48,7 +49,7 @@ import { ImageService } from '../../services/image.service';
             }
           </div>
           <div class="cta-section">
-            <button class="btn-outline" routerLink="/gallery">View All Work</button>
+            <button class="btn-outline" routerLink="/gallery" (click)="trackNavClick('gallery')">View All Work</button>
           </div>
         </div>
       </section>
@@ -66,7 +67,7 @@ import { ImageService } from '../../services/image.service';
             }
           </div>
           <div class="cta-section">
-            <button class="btn-primary" routerLink="/packages">View All Packages</button>
+            <button class="btn-primary" routerLink="/packages" (click)="trackNavClick('packages')">View All Packages</button>
           </div>
         </div>
       </section>
@@ -74,8 +75,19 @@ import { ImageService } from '../../services/image.service';
   `,
   styleUrls: ['./home.component.scss']
 })
-export class HomeComponent {
-  constructor(public imageService: ImageService) {}
+export class HomeComponent implements OnInit {
+  constructor(
+    public imageService: ImageService,
+    private analytics: AnalyticsService
+  ) {}
+
+  ngOnInit() {
+    this.analytics.trackPageView('home');
+  }
+
+  trackNavClick(destination: string) {
+    this.analytics.trackNavigation(destination);
+  }
 
   highlights = [
     {
@@ -126,5 +138,6 @@ export class HomeComponent {
     // For now, we'll hide the broken image
     img.style.display = 'none';
     console.warn('Failed to load image:', img.src);
+    this.analytics.trackImageError(img.src, 'home_image_load_failed');
   }
 }
