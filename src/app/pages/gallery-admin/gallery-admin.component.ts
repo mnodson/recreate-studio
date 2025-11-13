@@ -5,6 +5,7 @@ import { PersonalGalleryService } from '../../services/personal-gallery.service'
 import { ImageService } from '../../services/image.service';
 import { GithubUploadService } from '../../services/github-upload.service';
 import { AuthService } from '../../services/auth.service';
+import { AnalyticsService } from '../../services/analytics.service';
 import {
   PersonalGallery,
   GalleryStats,
@@ -296,7 +297,7 @@ import {
         }
 
         @if (!loading()) {
-          <div class="galleries-list">
+          <div class="galleries-grid">
             @if (galleries().length === 0) {
               <div class="empty-state">
                 <p>No galleries found. Create your first gallery above!</p>
@@ -306,100 +307,169 @@ import {
             @for (gallery of galleries(); track gallery.id) {
               <div
                 class="gallery-card"
-                [class.expired]="isExpired(gallery)">
-            <div class="gallery-card-header">
-              <div class="gallery-info">
-                <h3>{{ gallery.title }}</h3>
-                <p class="client-name">{{ gallery.clientName }}</p>
-              </div>
-              <div class="gallery-status" [class.active]="!isExpired(gallery)">
-                {{ isExpired(gallery) ? 'Expired' : 'Active' }}
-              </div>
-            </div>
-
-            <div class="gallery-card-body">
-              @if (gallery.description) {
-                <p class="description">
-                  {{ gallery.description }}
-                </p>
-              }
-
-              <div class="gallery-meta">
-                <div class="meta-item">
-                  <strong>Images:</strong> {{ gallery.imageUrls.length }}
-                </div>
-                <div class="meta-item">
-                  <strong>Views:</strong> {{ gallery.accessCount }}
-                </div>
-                <div class="meta-item">
-                  <strong>Created:</strong> {{ gallery.createdAt | date:'short' }}
-                </div>
-                <div class="meta-item">
-                  <strong>Expires:</strong> {{ gallery.expiresAt | date:'short' }}
-                </div>
-                @if (gallery.lastAccessedAt) {
-                  <div class="meta-item">
-                    <strong>Last Viewed:</strong> {{ gallery.lastAccessedAt | date:'short' }}
-                  </div>
-                }
-                @if (gallery.password) {
-                  <div class="meta-item">
-                    <strong>Password Protected:</strong> Yes
-                  </div>
-                }
-              </div>
-
-              <div class="share-url">
-                <strong>Share Link:</strong>
-                <div class="share-url-inline">
-                  <input
-                    type="text"
-                    [value]="getShareUrl(gallery.shareToken)"
-                    readonly
-                    #galleryShareUrl>
-                  <div class="button-group">
-                    <button class="btn-copy" (click)="copyToClipboard(galleryShareUrl)">
-                      Copy
-                    </button>
-                    <button class="btn-view" (click)="openGallery(getShareUrl(gallery.shareToken))">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                        <polyline points="15 3 21 3 21 9"></polyline>
-                        <line x1="10" y1="14" x2="21" y2="3"></line>
+                [class.expired]="isExpired(gallery)"
+                (click)="closeDropdown()">
+                <div class="gallery-card-header">
+                  <div class="gallery-info">
+                    <h3>{{ gallery.title }}</h3>
+                    <p class="client-name">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
                       </svg>
-                      View
-                    </button>
+                      {{ gallery.clientName }}
+                    </p>
+                  </div>
+                  <div class="header-actions">
+                    <div class="gallery-status" [class.active]="!isExpired(gallery)">
+                      {{ isExpired(gallery) ? 'Expired' : 'Active' }}
+                    </div>
+                    <div class="dropdown-container">
+                      <button
+                        class="dropdown-toggle"
+                        (click)="toggleDropdown(gallery.id, $event)"
+                        [class.active]="openDropdownId() === gallery.id">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <circle cx="12" cy="12" r="1"></circle>
+                          <circle cx="12" cy="5" r="1"></circle>
+                          <circle cx="12" cy="19" r="1"></circle>
+                        </svg>
+                      </button>
+                      @if (openDropdownId() === gallery.id) {
+                        <div class="dropdown-menu" (click)="$event.stopPropagation()">
+                          <button
+                            class="dropdown-item"
+                            (click)="extendGallery(gallery.id, 7); closeDropdown()"
+                            [disabled]="!gallery.isActive">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <circle cx="12" cy="12" r="10"></circle>
+                              <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                            Extend 7 Days
+                          </button>
+                          <button
+                            class="dropdown-item"
+                            (click)="extendGallery(gallery.id, 30); closeDropdown()"
+                            [disabled]="!gallery.isActive">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <circle cx="12" cy="12" r="10"></circle>
+                              <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                            Extend 30 Days
+                          </button>
+                          @if (gallery.isActive) {
+                            <button
+                              class="dropdown-item deactivate"
+                              (click)="deactivateGallery(gallery.id); closeDropdown()">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="15" y1="9" x2="9" y2="15"></line>
+                                <line x1="9" y1="9" x2="15" y2="15"></line>
+                              </svg>
+                              Deactivate
+                            </button>
+                          }
+                          <button
+                            class="dropdown-item delete"
+                            (click)="deleteGallery(gallery.id); closeDropdown()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <polyline points="3 6 5 6 21 6"></polyline>
+                              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                            </svg>
+                            Delete
+                          </button>
+                        </div>
+                      }
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
 
-            <div class="gallery-card-actions">
-              <button
-                class="btn-action btn-extend"
-                (click)="extendGallery(gallery.id, 7)"
-                [disabled]="!gallery.isActive">
-                Extend 7 Days
-              </button>
-              <button
-                class="btn-action btn-extend"
-                (click)="extendGallery(gallery.id, 30)"
-                [disabled]="!gallery.isActive">
-                Extend 30 Days
-              </button>
-              @if (gallery.isActive) {
-                <button
-                  class="btn-action btn-deactivate"
-                  (click)="deactivateGallery(gallery.id)">
-                  Deactivate
-                </button>
-              }
-              <button
-                class="btn-action btn-delete"
-                (click)="deleteGallery(gallery.id)">
-                Delete
-              </button>
-            </div>
+                <div class="gallery-card-body">
+                  @if (gallery.description) {
+                    <p class="description">{{ gallery.description }}</p>
+                  }
+
+                  <div class="gallery-meta">
+                    <div class="meta-item">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                        <polyline points="21 15 16 10 5 21"></polyline>
+                      </svg>
+                      <span>{{ gallery.imageUrls.length }} images</span>
+                    </div>
+                    <div class="meta-item">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                      </svg>
+                      <span>{{ gallery.accessCount }} views</span>
+                    </div>
+                    <div class="meta-item">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                      </svg>
+                      <span>{{ gallery.createdAt | date:'MMM d, y' }}</span>
+                    </div>
+                    <div class="meta-item">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                      </svg>
+                      <span>Expires {{ gallery.expiresAt | date:'MMM d' }}</span>
+                    </div>
+                    @if (gallery.lastAccessedAt) {
+                      <div class="meta-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                          <polyline points="17 6 23 6 23 12"></polyline>
+                        </svg>
+                        <span>{{ gallery.lastAccessedAt | date:'MMM d' }}</span>
+                      </div>
+                    }
+                    @if (gallery.password) {
+                      <div class="meta-item password">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                        <span>Password protected</span>
+                      </div>
+                    }
+                  </div>
+                </div>
+
+                <div class="gallery-card-footer">
+                  <label class="share-label">Share Link</label>
+                  <div class="share-url-inline">
+                    <input
+                      type="text"
+                      [value]="getShareUrl(gallery.shareToken)"
+                      readonly
+                      #galleryShareUrl
+                      (click)="$event.stopPropagation()">
+                    <div class="button-group">
+                      <button class="btn-copy" (click)="copyToClipboard(galleryShareUrl); $event.stopPropagation()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                        Copy
+                      </button>
+                      <button class="btn-view" (click)="openGallery(getShareUrl(gallery.shareToken)); $event.stopPropagation()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                          <polyline points="15 3 21 3 21 9"></polyline>
+                          <line x1="10" y1="14" x2="21" y2="3"></line>
+                        </svg>
+                        View
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             }
           </div>
@@ -430,6 +500,7 @@ export class GalleryAdminComponent implements OnInit, OnDestroy {
   createdShareUrl = signal('');
   showToast = signal(false);
   toastMessage = signal('');
+  openDropdownId = signal<string | null>(null);
 
   // File upload state
   selectedFiles = signal<File[]>([]);
@@ -468,10 +539,12 @@ export class GalleryAdminComponent implements OnInit, OnDestroy {
     private galleryService: PersonalGalleryService,
     public imageService: ImageService,
     private githubUploadService: GithubUploadService,
-    public authService: AuthService
+    public authService: AuthService,
+    private analytics: AnalyticsService
   ) {}
 
   ngOnInit() {
+    this.analytics.trackPageView('gallery_admin');
     this.loadGalleries();
     this.loadStats();
   }
@@ -563,6 +636,11 @@ export class GalleryAdminComponent implements OnInit, OnDestroy {
 
     this.selectedFiles.set(validFiles);
     this.generateImagePreviews(validFiles);
+
+    // Track file selection
+    if (validFiles.length > 0) {
+      this.analytics.trackAdminImageUpload(validFiles.length, 'file_picker');
+    }
   }
 
   private generateImagePreviews(files: File[]) {
@@ -700,6 +778,9 @@ export class GalleryAdminComponent implements OnInit, OnDestroy {
             this.uploading.set(false);
             this.uploadProgress.set('');
 
+            // Track gallery creation
+            this.analytics.trackAdminGalleryCreate(imageUrls.length);
+
             // Hide the form and reset it
             this.showCreateForm.set(false);
             this.resetForm();
@@ -795,10 +876,13 @@ export class GalleryAdminComponent implements OnInit, OnDestroy {
     this.galleryService.extendExpiration(id, days).subscribe({
       next: () => {
         console.log(`Gallery expiration extended by ${days} days`);
+        this.analytics.trackAdminGalleryEdit(id, `extend_${days}_days`);
         this.loadGalleries();
+        this.showToastMessage(`Gallery extended by ${days} days`);
       },
       error: (error) => {
         console.error('Error extending gallery:', error);
+        this.analytics.trackError(error.message, 'extend_gallery');
         alert('Failed to extend gallery expiration');
       }
     });
@@ -809,11 +893,14 @@ export class GalleryAdminComponent implements OnInit, OnDestroy {
       this.galleryService.deactivateGallery(id).subscribe({
         next: () => {
           console.log('Gallery deactivated');
+          this.analytics.trackAdminGalleryEdit(id, 'deactivate');
           this.loadGalleries();
           this.loadStats();
+          this.showToastMessage('Gallery deactivated successfully');
         },
         error: (error) => {
           console.error('Error deactivating gallery:', error);
+          this.analytics.trackError(error.message, 'deactivate_gallery');
           alert('Failed to deactivate gallery');
         }
       });
@@ -825,11 +912,14 @@ export class GalleryAdminComponent implements OnInit, OnDestroy {
       this.galleryService.deleteGallery(id).subscribe({
         next: () => {
           console.log('Gallery deleted');
+          this.analytics.trackAdminGalleryEdit(id, 'delete');
           this.loadGalleries();
           this.loadStats();
+          this.showToastMessage('Gallery deleted successfully');
         },
         error: (error) => {
           console.error('Error deleting gallery:', error);
+          this.analytics.trackError(error.message, 'delete_gallery');
           alert('Failed to delete gallery');
         }
       });
@@ -908,5 +998,16 @@ export class GalleryAdminComponent implements OnInit, OnDestroy {
     } catch (error: any) {
       this.showToastMessage('Failed to sign out: ' + error.message);
     }
+  }
+
+  toggleDropdown(galleryId: string, event?: Event) {
+    if (event) {
+      event.stopPropagation();
+    }
+    this.openDropdownId.set(this.openDropdownId() === galleryId ? null : galleryId);
+  }
+
+  closeDropdown() {
+    this.openDropdownId.set(null);
   }
 }
