@@ -15,9 +15,19 @@ service cloud.firestore {
     }
 
     // Personal Galleries Collection
-    // - Only authenticated users can create, read, update, or delete
+    // - Authenticated users have full access
+    // - Anonymous users can read shared galleries with valid share tokens
     match /personal-galleries/{galleryId} {
+      // Authenticated users have full access
       allow read, write: if request.auth != null;
+
+      // Anonymous users can access galleries with valid, non-expired share tokens
+      // This allows shared gallery links to work for unauthenticated users
+      allow get, list: if resource.data.shareToken != null
+                       && resource.data.shareToken != ''
+                       && (!('shareExpiresAt' in resource.data)
+                           || resource.data.shareExpiresAt == null
+                           || resource.data.shareExpiresAt > request.time);
     }
 
     // Default deny all other collections

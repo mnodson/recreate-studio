@@ -146,4 +146,12 @@ export class ContactComponent implements OnInit {
 
     return '';
   }
+
+  onDateInputFocus(event: FocusEvent): void {
+    const input = event.target as HTMLInputElement;
+    if (input && input.type === 'date') {
+      // Trigger the calendar picker on focus
+      input.showPicker?.();
+    }
+  }
 }

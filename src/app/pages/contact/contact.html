@@ -83,7 +83,8 @@
                 <input
                   type="date"
                   id="sessionDate"
-                  formControlName="sessionDate">
+                  formControlName="sessionDate"
+                  (focus)="onDateInputFocus($event)">
                 <small>Optional - helps us check availability</small>
               </div>
 
