@@ -152,7 +152,6 @@ export class GalleryComponent implements OnInit {
     'Headshots',
     'Holiday Mini Sessions',
     'Newborns',
-    'Portraits',
     'Seniors',
     'Sports'
   ];
@@ -165,7 +164,6 @@ export class GalleryComponent implements OnInit {
     'Headshots': 'Headshots',
     'Holiday Mini Sessions': 'HolidayMiniSessions',
     'Newborns': 'Newborns',
-    'Portraits': 'Portraits',
     'Seniors': 'Seniors',
     'Sports': 'Sports'
   };

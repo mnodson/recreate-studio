@@ -130,23 +130,21 @@
   }
 
   .grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.5rem;
+    // True masonry layout using CSS columns
+    display: block;
+    column-count: 3;
+    column-gap: 0.5rem;
     margin-bottom: 3rem;
 
     // Performance optimizations
-    contain: layout;
-    content-visibility: auto;
+    transform: translateZ(0);
 
     @media (max-width: 1024px) {
-      grid-template-columns: repeat(2, 1fr);
-      gap: 1rem;
+      column-count: 2;
+      column-gap: 0.5rem;
     }
 
     @media (max-width: 768px) {
-      // Use masonry layout on mobile
-      display: block;
       column-count: 2;
       column-gap: 0.5rem;
     }
@@ -156,7 +154,11 @@
     position: relative;
     overflow: visible;
     border-radius: 0;
-    contain: layout style paint;
+    display: inline-block;
+    width: 100%;
+    margin-bottom: 0.5rem;
+    break-inside: avoid;
+    page-break-inside: avoid;
     transform: translateZ(0); // Force GPU acceleration
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     animation: fadeInUp 0.5s ease-out backwards;
@@ -178,17 +180,9 @@
       }
     }
 
-    // Mobile masonry layout adjustments
-    @media (max-width: 768px) {
-      display: inline-block;
-      width: 100%;
-      margin-bottom: 0.5rem;
-      break-inside: avoid;
-      page-break-inside: avoid;
-    }
-
     &.featured {
-      grid-column: span 1;
+      // No special treatment in masonry
+      width: 100%;
     }
 
     .image-container {
