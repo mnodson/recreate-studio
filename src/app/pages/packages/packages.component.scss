@@ -1,19 +1,29 @@
 .packages-container {
   padding-top: 5rem;
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
 
   @media (max-width: 768px) {
     padding-top: 4rem;
+  }
+
+  * {
+    box-sizing: border-box;
   }
 }
 
 .packages-header {
   padding: 3rem 0;
   text-align: center;
+  width: 100%;
 
   .container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 2rem;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   h1 {
@@ -36,6 +46,10 @@
   @media (max-width: 768px) {
     padding: 2rem 0 1.5rem;
 
+    .container {
+      padding: 0 1rem;
+    }
+
     h1 {
       font-size: 2rem;
     }
@@ -48,16 +62,19 @@
 
 .packages-grid {
   padding: 3rem 0;
+  width: 100%;
 
   .container {
     max-width: 1400px;
     margin: 0 auto;
     padding: 0 2rem;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 350px), 1fr));
     gap: 2rem;
 
     .package-card {
@@ -239,6 +256,10 @@
   @media (max-width: 768px) {
     padding: 2rem 0;
 
+    .container {
+      padding: 0 1rem;
+    }
+
     .grid {
       grid-template-columns: 1fr;
       gap: 1rem;
@@ -349,11 +370,14 @@
 .add-ons {
   background: rgba(15, 10, 25, 0.5);
   padding: 4rem 0;
+  width: 100%;
 
   .container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 2rem;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   h2 {
@@ -366,7 +390,7 @@
 
   .add-ons-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
     gap: 1.5rem;
 
     .add-on-item {
@@ -407,6 +431,10 @@
   @media (max-width: 768px) {
     padding: 2.5rem 0;
 
+    .container {
+      padding: 0 1rem;
+    }
+
     h2 {
       font-size: 1.8rem;
       margin-bottom: 1.5rem;
@@ -432,11 +460,14 @@
 
 .booking-process {
   padding: 4rem 0;
+  width: 100%;
 
   .container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 2rem;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   h2 {
@@ -449,7 +480,7 @@
 
   .process-steps {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
     gap: 2rem;
 
     .step {
@@ -492,6 +523,10 @@
   @media (max-width: 768px) {
     padding: 2.5rem 0;
 
+    .container {
+      padding: 0 1rem;
+    }
+
     h2 {
       font-size: 1.8rem;
       margin-bottom: 1.5rem;
@@ -527,15 +562,22 @@
 .specialty-section {
   padding: 4rem 0;
   background: rgba(15, 10, 25, 0.3);
+  width: 100%;
 
   @media (max-width: 768px) {
     padding: 2.5rem 0;
+
+    .container {
+      padding: 0 1rem;
+    }
   }
 
   .container {
     max-width: 1400px;
     margin: 0 auto;
     padding: 0 2rem;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .specialty-card {
@@ -600,7 +642,7 @@
 
   .specialty-offerings {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
     gap: 2rem;
 
     @media (max-width: 768px) {
@@ -728,11 +770,14 @@
   background: rgba(15, 10, 25, 0.5);
   padding: 4rem 0;
   text-align: center;
+  width: 100%;
 
   .container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 2rem;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   h2 {
@@ -767,6 +812,10 @@
 
   @media (max-width: 768px) {
     padding: 2.5rem 0;
+
+    .container {
+      padding: 0 1rem;
+    }
 
     h2 {
       font-size: 1.8rem;
