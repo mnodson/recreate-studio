@@ -114,17 +114,17 @@ export class HomeComponent implements OnInit {
     {
       name: 'Portrait Photography',
       description: 'Professional individual and couple portraits with artistic vision and creative direction',
-      price: '$400'
+      price: 'from $95'
     },
     {
       name: 'Family Sessions',
       description: 'Capturing authentic family connections and timeless memories together',
-      price: '$350'
+      price: 'from $495'
     },
     {
       name: 'Senior Photography',
       description: 'Creative senior portraits celebrating your milestone year with style and personality',
-      price: '$275'
+      price: '$495'
     }
   ];
 

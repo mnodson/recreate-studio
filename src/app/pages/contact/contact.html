@@ -1,0 +1,220 @@
+<div class="contact-container">
+  <div class="contact-header">
+    <div class="container">
+      <h1>{{ getInquiryTypeLabel() }}</h1>
+      <p>Let's bring your vision to life. Fill out the form below and we'll get back to you within 24 hours.</p>
+    </div>
+  </div>
+
+  <div class="contact-content">
+    <div class="container">
+      @if (submitSuccess()) {
+        <div class="success-message">
+          <div class="success-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+          </div>
+          <h2>Thank You!</h2>
+          <p>Your inquiry has been received. We'll be in touch soon!</p>
+          <small>Redirecting to home page...</small>
+        </div>
+      } @else {
+        <div class="form-grid">
+          <div class="form-section">
+            <form [formGroup]="contactForm" (ngSubmit)="onSubmit()">
+              <!-- Pre-populated context info -->
+              @if (packageName()) {
+                <div class="context-info">
+                  <div class="context-badge">{{ packageCategory() }}</div>
+                  <h3>{{ packageName() }}</h3>
+                  <p>Fill out the details below and we'll customize a session plan for you.</p>
+                </div>
+              }
+
+              <!-- Name Field -->
+              <div class="form-group">
+                <label for="name">Full Name *</label>
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  formControlName="name"
+                  placeholder="Enter your full name"
+                  [class.invalid]="isFieldInvalid('name')">
+                @if (isFieldInvalid('name')) {
+                  <span class="error-message">{{ getFieldError('name') }}</span>
+                }
+              </div>
+
+              <!-- Email Field -->
+              <div class="form-group">
+                <label for="email">Email Address *</label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  formControlName="email"
+                  placeholder="your@email.com"
+                  [class.invalid]="isFieldInvalid('email')">
+                @if (isFieldInvalid('email')) {
+                  <span class="error-message">{{ getFieldError('email') }}</span>
+                }
+              </div>
+
+              <!-- Phone Field -->
+              <div class="form-group">
+                <label for="phone">Phone Number</label>
+                <input
+                  type="tel"
+                  id="phone"
+                  formControlName="phone"
+                  placeholder="(555) 123-4567"
+                  [class.invalid]="isFieldInvalid('phone')">
+                @if (isFieldInvalid('phone')) {
+                  <span class="error-message">{{ getFieldError('phone') }}</span>
+                }
+              </div>
+
+              <!-- Preferred Session Date -->
+              <div class="form-group">
+                <label for="sessionDate">Preferred Session Date</label>
+                <input
+                  type="date"
+                  id="sessionDate"
+                  formControlName="sessionDate">
+                <small>Optional - helps us check availability</small>
+              </div>
+
+              <!-- Preferred Contact Method -->
+              <div class="form-group">
+                <label>Preferred Contact Method *</label>
+                <div class="radio-group">
+                  <label class="radio-label">
+                    <input type="radio" formControlName="preferredContact" value="email">
+                    <span>Email</span>
+                  </label>
+                  <label class="radio-label">
+                    <input type="radio" formControlName="preferredContact" value="phone">
+                    <span>Phone</span>
+                  </label>
+                  <label class="radio-label">
+                    <input type="radio" formControlName="preferredContact" value="text">
+                    <span>Text Message</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Message Field -->
+              <div class="form-group">
+                <label for="message">Tell Us About Your Vision *</label>
+                <textarea
+                  id="message"
+                  formControlName="message"
+                  rows="6"
+                  placeholder="Tell us about your photography needs, preferred locations, style preferences, or any questions you have..."
+                  [class.invalid]="isFieldInvalid('message')"></textarea>
+                @if (isFieldInvalid('message')) {
+                  <span class="error-message">{{ getFieldError('message') }}</span>
+                }
+                <small>Please include any specific details that will help us prepare for your session</small>
+              </div>
+
+              <!-- Submit Error -->
+              @if (submitError()) {
+                <div class="submit-error">
+                  {{ submitError() }}
+                </div>
+              }
+
+              <!-- Submit Button -->
+              <div class="form-actions">
+                <button
+                  type="submit"
+                  class="btn-submit"
+                  [disabled]="submitting()">
+                  @if (submitting()) {
+                    <span class="spinner"></span>
+                    <span>Sending...</span>
+                  } @else {
+                    <span>Send Inquiry</span>
+                  }
+                </button>
+                <button
+                  type="button"
+                  class="btn-cancel"
+                  (click)="router.navigate(['/packages'])">
+                  Go Back
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <div class="info-section">
+            <div class="info-card">
+              <h3>What Happens Next?</h3>
+              <div class="info-steps">
+                <div class="info-step">
+                  <div class="step-number">1</div>
+                  <div class="step-content">
+                    <h4>We Review Your Inquiry</h4>
+                    <p>We'll carefully review your message and package interests</p>
+                  </div>
+                </div>
+                <div class="info-step">
+                  <div class="step-number">2</div>
+                  <div class="step-content">
+                    <h4>Personal Response</h4>
+                    <p>You'll receive a personalized response within 24 hours</p>
+                  </div>
+                </div>
+                <div class="info-step">
+                  <div class="step-number">3</div>
+                  <div class="step-content">
+                    <h4>Plan Your Session</h4>
+                    <p>We'll work together to create the perfect photography experience</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="info-card contact-details">
+              <h3>Other Ways to Reach Us</h3>
+              <div class="contact-method">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                  <polyline points="22,6 12,13 2,6"></polyline>
+                </svg>
+                <div>
+                  <strong>Email</strong>
+                  <p>laura@recreate-studio.com</p>
+                </div>
+              </div>
+              <div class="contact-method">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                </svg>
+                <div>
+                  <strong>Phone</strong>
+                  <p>(xxx) xxx-xxxx</p>
+                </div>
+              </div>
+              <div class="contact-method">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                  <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                  <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                </svg>
+                <div>
+                  <strong>Instagram</strong>
+                  <p>@recreatestudio</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</div>

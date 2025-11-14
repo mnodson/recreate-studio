@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { AnalyticsService } from '../../services/analytics.service';
 
 interface Package {
@@ -12,6 +13,21 @@ interface Package {
   features: string[];
   popular: boolean;
   additionalInfo?: string;
+}
+
+interface SpecialtyOffering {
+  name: string;
+  category: string;
+  price: string;
+  description: string;
+  features: string[];
+}
+
+interface SpecialtySection {
+  sectionName: string;
+  tagline: string;
+  description: string;
+  offerings: SpecialtyOffering[];
 }
 
 @Component({
@@ -30,29 +46,42 @@ interface Package {
       <section class="packages-grid">
         <div class="container">
           <div class="grid">
-            <div 
-              class="package-card" 
+            <div
+              class="package-card"
               *ngFor="let package of packages"
-              [class.popular]="package.popular">
+              [class.popular]="package.popular"
+              [class.expanded]="isPackageExpanded(package.id)">
               <div class="package-header" *ngIf="package.popular">
                 <span class="popular-badge">Most Popular</span>
               </div>
               <div class="package-content">
-                <div class="package-category">{{ package.category }}</div>
-                <h3 class="package-name">{{ package.name }}</h3>
-                <div class="package-price">{{ package.price }}</div>
-                <div class="package-duration">{{ package.duration }}</div>
-                <p class="package-description">{{ package.description }}</p>
-                
-                <ul class="package-features">
-                  <li *ngFor="let feature of package.features">{{ feature }}</li>
-                </ul>
-                
-                <div class="package-additional" *ngIf="package.additionalInfo">
-                  <p>{{ package.additionalInfo }}</p>
+                <div class="package-summary" (click)="togglePackage(package.id)">
+                  <div class="summary-main">
+                    <div class="package-category">{{ package.category }}</div>
+                    <h3 class="package-name">{{ package.name }}</h3>
+                    <div class="package-price">{{ package.price }}</div>
+                    <div class="package-duration">{{ package.duration }}</div>
+                  </div>
+                  <button class="expand-btn" type="button">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                  </button>
                 </div>
-                
-                <button class="package-btn" (click)="trackPackageInterest(package)">Book This Package</button>
+
+                <div class="package-details">
+                  <p class="package-description">{{ package.description }}</p>
+
+                  <ul class="package-features">
+                    <li *ngFor="let feature of package.features">{{ feature }}</li>
+                  </ul>
+
+                  <div class="package-additional" *ngIf="package.additionalInfo">
+                    <p>{{ package.additionalInfo }}</p>
+                  </div>
+
+                  <button class="package-btn" (click)="trackPackageInterest(package)">Book This Package</button>
+                </div>
               </div>
             </div>
           </div>
@@ -87,6 +116,41 @@ interface Package {
         </div>
       </section>
 
+      <section class="specialty-section">
+        <div class="container">
+          <div class="specialty-card">
+            <div class="specialty-header">
+              <div class="specialty-badge">{{ specialtySection.sectionName }}</div>
+              <h2>{{ specialtySection.tagline }}</h2>
+              <p class="specialty-intro">{{ specialtySection.description }}</p>
+            </div>
+
+            <div class="specialty-offerings">
+              @for (offering of specialtySection.offerings; track offering.name) {
+                <div class="specialty-offering">
+                  <div class="offering-header">
+                    <div class="offering-info">
+                      <div class="offering-category">{{ offering.category }}</div>
+                      <h3 class="offering-name">{{ offering.name }}</h3>
+                    </div>
+                    <div class="offering-price">{{ offering.price }}</div>
+                  </div>
+                  <p class="offering-description">{{ offering.description }}</p>
+                  <ul class="offering-features">
+                    @for (feature of offering.features; track feature) {
+                      <li>{{ feature }}</li>
+                    }
+                  </ul>
+                  <button class="offering-btn" (click)="trackPackageInterest({ name: offering.name, category: offering.category })">
+                    Inquire About This Session
+                  </button>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section class="contact-section">
         <div class="container">
           <h2>Ready to Book?</h2>
@@ -96,7 +160,7 @@ interface Package {
             <button class="btn-secondary" (click)="trackContactClick('quote')">Get Custom Quote</button>
           </div>
           <div class="contact-info">
-            <p>Call: (xxx) xxx-xxxx | Email: hello@recreatestudio.com</p>
+            <p>Call: (xxx) xxx-xxxx | Email: laura@recreate-studio.com</p>
           </div>
         </div>
       </section>
@@ -105,22 +169,55 @@ interface Package {
   styleUrls: ['./packages.component.scss']
 })
 export class PackagesComponent implements OnInit {
-  constructor(private analytics: AnalyticsService) {}
+  expandedPackages = signal<Set<number>>(new Set());
+
+  constructor(
+    private analytics: AnalyticsService,
+    private router: Router
+  ) {}
 
   ngOnInit() {
     this.analytics.trackPageView('packages');
   }
 
-  trackPackageInterest(pkg: Package) {
+  togglePackage(packageId: number) {
+    const expanded = new Set(this.expandedPackages());
+    if (expanded.has(packageId)) {
+      expanded.delete(packageId);
+    } else {
+      expanded.add(packageId);
+    }
+    this.expandedPackages.set(expanded);
+  }
+
+  isPackageExpanded(packageId: number): boolean {
+    return this.expandedPackages().has(packageId);
+  }
+
+  trackPackageInterest(pkg: Package | { name: string; category: string }) {
     this.analytics.trackPackageView(pkg.name);
     this.analytics.trackContactClick('form');
+
+    // Navigate to contact form with package details
+    this.router.navigate(['/contact'], {
+      queryParams: {
+        type: 'package',
+        package: pkg.name,
+        category: pkg.category
+      }
+    });
   }
 
   trackContactClick(type: string) {
-    if (type === 'consultation' || type === 'quote') {
-      this.analytics.trackContactClick('form');
-    }
+    this.analytics.trackContactClick('form');
     this.analytics.trackCustomEvent('contact_interest', { type });
+
+    // Navigate to contact form with inquiry type
+    this.router.navigate(['/contact'], {
+      queryParams: {
+        type: type
+      }
+    });
   }
 
   packages: Package[] = [
@@ -152,13 +249,13 @@ export class PackagesComponent implements OnInit {
         'Online gallery with slideshow',
         'Optional locations'
       ],
-      popular: false
+      popular: true
     },
     {
       id: 3,
       name: 'Essential',
       category: 'Portrait Session',
-      price: '$495',
+      price: '$395',
       duration: '1.5 Hours',
       description: 'Perfect for individual portraits, couples, or small families',
       features: [
@@ -169,7 +266,6 @@ export class PackagesComponent implements OnInit {
         'Online gallery for sharing'
       ],
       popular: false,
-      //additionalInfo: 'Bring friends for group shots'
     },
     {
       id: 4,
@@ -191,17 +287,15 @@ export class PackagesComponent implements OnInit {
       id: 5,
       name: 'Commercial',
       category: 'Business Photography',
-      price: '$500',
+      price: '$999',
       duration: '2 Hours',
       description: 'Professional photography for brands and businesses',
       features: [
         '2-hour photography session',
-        'Business location or studio',
-        '30 edited high-resolution images',
+        'Business location',
+        '20-30 edited high-resolution images',
         'Commercial usage rights',
-        'Online delivery',
-        'Rush editing available',
-        'Multiple outfit changes'
+        'Rush editing available'
       ],
       popular: false
     },
@@ -209,20 +303,18 @@ export class PackagesComponent implements OnInit {
       id: 6,
       name: 'Event Coverage',
       category: 'Event Photography',
-      price: '$400/hour',
+      price: '$600 /2hr',
       duration: 'Flexible',
       description: 'Professional event documentation and coverage',
       features: [
         'Hourly rate with 2-hour minimum',
+        '$200 per additional hour',
         'Full event coverage',
         'Candid and posed shots',
-        'Same-day preview images',
-        'Online gallery delivery',
-        'Print release included',
+        'Online gallery',
         'Professional editing'
       ],
-      popular: false,
-      additionalInfo: 'Multi-day events available'
+      popular: false
     }
   ];
 
@@ -270,4 +362,46 @@ export class PackagesComponent implements OnInit {
       description: 'Receive your edited high-resolution images within 2 weeks.'
     }
   ];
+
+  specialtySection: SpecialtySection = {
+    sectionName: 'Specialty Sessions',
+    tagline: 'Unique moments deserve specialized expertise',
+    description: 'Every story is different. These sessions are fully customized to your specific needs.',
+    offerings: [
+      {
+        name: 'Intimate Portraits',
+        category: 'Boudoir',
+        price: 'from $695',
+        description: 'Empowering, artistic portraits in a safe, comfortable environment',
+        features: [
+          'Pre-session consultation',
+          'Private online gallery',
+          'Discrete, professional service'
+        ]
+      },
+      {
+        name: 'Birth Story',
+        category: 'Birth Photography',
+        price: 'from $1,495',
+        description: 'Document the incredible journey of your child\'s arrival',
+        features: [
+          'On-call coverage 38-42 weeks',
+          'Labor and delivery coverage',
+          'Fresh 48 session included',
+        ]
+      },
+      {
+        name: 'Game Day',
+        category: 'Sports Photography',
+        price: 'from $295/game',
+        description: 'Capture the action, emotion, and triumph of youth sports',
+        features: [
+          'Full game coverage',
+          'Action shots & team moments',
+          'Online gallery for team sharing',
+          'Package deals for full season'
+        ]
+      }
+    ]
+  };
 }
