@@ -1175,3 +1175,169 @@
     opacity: 0;
   }
 }
+
+// Password Regeneration Modal
+.password-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+  animation: fadeIn 0.3s;
+}
+
+.password-modal {
+  background: rgba(30, 20, 40, 0.95);
+  border: 2px solid rgba(192, 132, 252, 0.4);
+  border-radius: 20px;
+  max-width: 600px;
+  width: 100%;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  animation: modalSlideIn 0.3s;
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2rem 2rem 1rem;
+    border-bottom: 1px solid rgba(192, 132, 252, 0.2);
+
+    h3 {
+      color: #e6d7ff;
+      font-size: 1.5rem;
+      font-weight: 300;
+      margin: 0;
+    }
+
+    .btn-close {
+      background: none;
+      border: none;
+      color: #e6d7ff;
+      font-size: 2rem;
+      cursor: pointer;
+      padding: 0;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: all 0.2s;
+
+      &:hover {
+        background: rgba(192, 132, 252, 0.2);
+        color: #c084fc;
+      }
+    }
+  }
+
+  .modal-body {
+    padding: 2rem;
+
+    p {
+      color: #b8a9d1;
+      margin-bottom: 1.5rem;
+      line-height: 1.6;
+
+      strong {
+        color: #e6d7ff;
+      }
+    }
+
+    .password-display {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+
+      input {
+        flex: 1;
+        padding: 1rem;
+        background: rgba(15, 10, 25, 0.6);
+        border: 2px solid rgba(192, 132, 252, 0.3);
+        border-radius: 10px;
+        color: #e6d7ff;
+        font-size: 1.1rem;
+        font-family: 'Courier New', monospace;
+        font-weight: 600;
+        letter-spacing: 2px;
+        text-align: center;
+
+        &:focus {
+          outline: none;
+          border-color: #c084fc;
+          background: rgba(15, 10, 25, 0.8);
+        }
+      }
+
+      .btn-copy {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 1rem 1.5rem;
+        background: linear-gradient(135deg, #c084fc, #8b5cf6);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 0.95rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s;
+        white-space: nowrap;
+
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 25px rgba(192, 132, 252, 0.4);
+        }
+
+        svg {
+          flex-shrink: 0;
+        }
+      }
+    }
+
+    .warning-text {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 1rem;
+      background: rgba(251, 191, 36, 0.1);
+      border: 1px solid rgba(251, 191, 36, 0.3);
+      border-radius: 10px;
+      color: #fbbf24;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      margin: 0;
+
+      svg {
+        flex-shrink: 0;
+        margin-top: 0.1rem;
+      }
+    }
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalSlideIn {
+  from {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

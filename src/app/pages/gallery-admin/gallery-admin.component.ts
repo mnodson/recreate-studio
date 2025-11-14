@@ -257,6 +257,43 @@ import {
         </section>
       }
 
+      <!-- Password Regeneration Modal -->
+      @if (regeneratedPassword()) {
+        <section class="password-modal-overlay" (click)="dismissPasswordModal()">
+          <div class="password-modal" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+              <h3>New Password Generated</h3>
+              <button type="button" class="btn-close" (click)="dismissPasswordModal()">×</button>
+            </div>
+            <div class="modal-body">
+              <p>A new password has been generated for gallery: <strong>{{ regeneratedPasswordGalleryTitle() }}</strong></p>
+              <div class="password-display">
+                <input
+                  type="text"
+                  [value]="regeneratedPassword()"
+                  readonly
+                  #passwordInput>
+                <button type="button" class="btn-copy" (click)="copyToClipboard(passwordInput)">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                  </svg>
+                  Copy
+                </button>
+              </div>
+              <p class="warning-text">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                  <line x1="12" y1="9" x2="12" y2="13"></line>
+                  <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                </svg>
+                Make sure to save this password and share it with the client. It won't be shown again.
+              </p>
+            </div>
+          </div>
+        </section>
+      }
+
       <!-- Statistics -->
       @if (stats()) {
         <section class="stats-section">
@@ -368,6 +405,15 @@ import {
                               <polyline points="12 6 12 12 16 14"></polyline>
                             </svg>
                             Extend 30 Days
+                          </button>
+                          <button
+                            class="dropdown-item"
+                            (click)="regeneratePassword(gallery.id, gallery.title); closeDropdown()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                            </svg>
+                            Regenerate Password
                           </button>
                           @if (gallery.isActive) {
                             <button
@@ -514,6 +560,8 @@ export class GalleryAdminComponent implements OnInit, OnDestroy {
   toastMessage = signal('');
   openDropdownId = signal<string | null>(null);
   unreadMessageCount = signal(0);
+  regeneratedPassword = signal('');
+  regeneratedPasswordGalleryTitle = signal('');
 
   // File upload state
   selectedFiles = signal<File[]>([]);
@@ -949,6 +997,42 @@ export class GalleryAdminComponent implements OnInit, OnDestroy {
         }
       });
     }
+  }
+
+  regeneratePassword(id: string, galleryTitle: string) {
+    if (confirm('This will generate a new password for the gallery. The old password will no longer work. Continue?')) {
+      // Generate a random 8-character password
+      const newPassword = this.generateRandomPassword();
+
+      this.galleryService.updateGallery(id, { password: newPassword }).subscribe({
+        next: () => {
+          console.log('Password regenerated for gallery:', id);
+          this.analytics.trackAdminGalleryEdit(id, 'regenerate_password');
+          this.regeneratedPassword.set(newPassword);
+          this.regeneratedPasswordGalleryTitle.set(galleryTitle);
+          this.loadGalleries(); // Refresh gallery list
+        },
+        error: (error) => {
+          console.error('Error regenerating password:', error);
+          this.analytics.trackError(error.message, 'regenerate_password');
+          alert('Failed to regenerate password');
+        }
+      });
+    }
+  }
+
+  generateRandomPassword(): string {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+    let password = '';
+    for (let i = 0; i < 8; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return password;
+  }
+
+  dismissPasswordModal() {
+    this.regeneratedPassword.set('');
+    this.regeneratedPasswordGalleryTitle.set('');
   }
 
   cleanupExpired() {
