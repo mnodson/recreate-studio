@@ -272,7 +272,11 @@ export class GalleryComponent implements OnInit {
 
   onImageError(event: Event): void {
     const img = event.target as HTMLImageElement;
-    img.style.display = 'none';
+    // Hide the entire gallery item, not just the image
+    const galleryItem = img.closest('.gallery-item') as HTMLElement;
+    if (galleryItem) {
+      galleryItem.style.display = 'none';
+    }
     console.warn('Failed to load gallery image:', img.src);
     this.analytics.trackImageError(img.src, 'gallery_image_load_failed');
   }
@@ -280,6 +284,11 @@ export class GalleryComponent implements OnInit {
   onImageLoad(event: Event): void {
     const img = event.target as HTMLImageElement;
     img.classList.add('loaded');
+    // Remove loading state from container
+    const imageContainer = img.closest('.image-container') as HTMLElement;
+    if (imageContainer) {
+      imageContainer.classList.add('image-loaded');
+    }
   }
 
   get filteredImages() {
