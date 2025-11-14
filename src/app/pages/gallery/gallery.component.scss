@@ -132,7 +132,7 @@
   .grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 1.5rem;
+    gap: 0.5rem;
     margin-bottom: 3rem;
 
     // Performance optimizations
@@ -149,7 +149,6 @@
       display: block;
       column-count: 2;
       column-gap: 0.5rem;
-      gap: 0;
     }
   }
 
