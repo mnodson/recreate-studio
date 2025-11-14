@@ -29,6 +29,11 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'message-center',
+    loadComponent: () => import('./pages/message-center/message-center').then(m => m.MessageCenterComponent),
+    canActivate: [authGuard]
+  },
+  {
     path: 'packages',
     loadComponent: () => import('./pages/packages/packages.component').then(m => m.PackagesComponent)
   },

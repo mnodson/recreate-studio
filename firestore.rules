@@ -1,0 +1,28 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Contact Messages Collection
+    // - Anyone can create (for contact form submissions)
+    // - Only authenticated users can read, update, or delete
+    match /contact-messages/{messageId} {
+      // Allow anyone to create new contact messages (for contact form)
+      allow create: if true;
+
+      // Only authenticated users can read, update, or delete
+      allow read, update, delete: if request.auth != null;
+    }
+
+    // Personal Galleries Collection
+    // - Only authenticated users can create, read, update, or delete
+    match /personal-galleries/{galleryId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Default deny all other collections
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

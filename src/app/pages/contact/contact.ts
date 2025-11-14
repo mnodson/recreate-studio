@@ -4,6 +4,7 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
 import { ActivatedRoute, Router } from '@angular/router';
 import { AnalyticsService } from '../../services/analytics.service';
 import { HttpClient } from '@angular/common/http';
+import { ContactMessageService } from '../../services/contact-message.service';
 
 @Component({
   selector: 'app-contact',
@@ -27,7 +28,8 @@ export class ContactComponent implements OnInit {
     private route: ActivatedRoute,
     public router: Router,
     private analytics: AnalyticsService,
-    private http: HttpClient
+    private http: HttpClient,
+    private contactMessageService: ContactMessageService
   ) {}
 
   ngOnInit() {
@@ -72,7 +74,7 @@ export class ContactComponent implements OnInit {
     }
   }
 
-  onSubmit() {
+  async onSubmit() {
     if (this.contactForm.invalid) {
       Object.keys(this.contactForm.controls).forEach(key => {
         this.contactForm.get(key)?.markAsTouched();
@@ -89,17 +91,30 @@ export class ContactComponent implements OnInit {
       package_interest: this.contactForm.value.packageInterest
     });
 
-    // TODO: Implement email sending functionality
-    // For now, simulate submission
-    setTimeout(() => {
-      console.log('Form data:', this.contactForm.value);
+    try {
+      const formData = this.contactForm.value;
 
-      this.http.post('https://www.form-to-email.com/api/s/Od52yxz5BRTI', this.contactForm.value, {
+      // Save to Firestore
+      await this.contactMessageService.createMessage({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone || '',
+        inquiryType: formData.inquiryType,
+        packageInterest: formData.packageInterest || '',
+        message: formData.message,
+        preferredContact: formData.preferredContact,
+        sessionDate: formData.sessionDate || ''
+      });
+
+      // Send email notification
+      this.http.post('https://www.form-to-email.com/api/s/Od52yxz5BRTI', formData, {
         headers: {
-           "Content-Type": "application/json"
+          "Content-Type": "application/json"
         }
-      })
-
+      }).subscribe({
+        next: () => console.log('Email sent successfully'),
+        error: (err) => console.error('Email send error:', err)
+      });
 
       this.submitting.set(false);
       this.submitSuccess.set(true);
@@ -108,7 +123,11 @@ export class ContactComponent implements OnInit {
       setTimeout(() => {
         this.router.navigate(['/']);
       }, 3000);
-    }, 1500);
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      this.submitting.set(false);
+      this.submitError.set('There was an error submitting your message. Please try again.');
+    }
   }
 
   isFieldInvalid(fieldName: string): boolean {

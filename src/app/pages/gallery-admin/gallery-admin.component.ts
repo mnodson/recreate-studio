@@ -1,11 +1,13 @@
 import { Component, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { PersonalGalleryService } from '../../services/personal-gallery.service';
 import { ImageService } from '../../services/image.service';
 import { GithubUploadService } from '../../services/github-upload.service';
 import { AuthService } from '../../services/auth.service';
 import { AnalyticsService } from '../../services/analytics.service';
+import { ContactMessageService } from '../../services/contact-message.service';
 import {
   PersonalGallery,
   GalleryStats,
@@ -30,6 +32,16 @@ import {
         <div class="header-actions">
           <button class="btn-primary" (click)="toggleCreateForm()">
             {{ showCreateForm() ? 'Cancel' : 'Create New Gallery' }}
+          </button>
+          <button class="btn-secondary messages-btn" (click)="navigateToMessageCenter()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+              <polyline points="22,6 12,13 2,6"></polyline>
+            </svg>
+            Messages
+            @if (unreadMessageCount() > 0) {
+              <span class="message-badge">{{ unreadMessageCount() }}</span>
+            }
           </button>
           <button class="btn-secondary" (click)="logout()">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -501,6 +513,7 @@ export class GalleryAdminComponent implements OnInit, OnDestroy {
   showToast = signal(false);
   toastMessage = signal('');
   openDropdownId = signal<string | null>(null);
+  unreadMessageCount = signal(0);
 
   // File upload state
   selectedFiles = signal<File[]>([]);
@@ -540,13 +553,16 @@ export class GalleryAdminComponent implements OnInit, OnDestroy {
     public imageService: ImageService,
     private githubUploadService: GithubUploadService,
     public authService: AuthService,
-    private analytics: AnalyticsService
+    private analytics: AnalyticsService,
+    private router: Router,
+    private contactMessageService: ContactMessageService
   ) {}
 
   ngOnInit() {
     this.analytics.trackPageView('gallery_admin');
     this.loadGalleries();
     this.loadStats();
+    this.loadUnreadMessageCount();
   }
 
   ngOnDestroy() {
@@ -585,6 +601,15 @@ export class GalleryAdminComponent implements OnInit, OnDestroy {
         console.error('Error loading stats:', error);
       }
     });
+  }
+
+  async loadUnreadMessageCount() {
+    try {
+      const count = await this.contactMessageService.getUnreadCount();
+      this.unreadMessageCount.set(count);
+    } catch (error) {
+      console.error('Error loading unread message count:', error);
+    }
   }
 
   toggleCreateForm() {
@@ -990,6 +1015,10 @@ export class GalleryAdminComponent implements OnInit, OnDestroy {
 
   isExpired(gallery: PersonalGallery): boolean {
     return !gallery.isActive || new Date(gallery.expiresAt) < new Date();
+  }
+
+  navigateToMessageCenter() {
+    this.router.navigate(['/message-center']);
   }
 
   async logout() {

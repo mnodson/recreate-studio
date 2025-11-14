@@ -1,0 +1,195 @@
+<div class="message-center-container">
+  <div class="message-center-header">
+    <h1>Message Center</h1>
+    <p>Manage contact form submissions and client inquiries</p>
+  </div>
+
+  <!-- Filter Tabs -->
+  <div class="filter-tabs">
+    <button
+      class="filter-tab"
+      [class.active]="selectedFilter() === 'all'"
+      (click)="filterMessages('all')">
+      All Messages
+      <span class="count">{{ getMessageCount('all') }}</span>
+    </button>
+    <button
+      class="filter-tab"
+      [class.active]="selectedFilter() === 'new'"
+      (click)="filterMessages('new')">
+      New
+      <span class="count count-new">{{ getMessageCount('new') }}</span>
+    </button>
+    <button
+      class="filter-tab"
+      [class.active]="selectedFilter() === 'read'"
+      (click)="filterMessages('read')">
+      Read
+      <span class="count">{{ getMessageCount('read') }}</span>
+    </button>
+    <button
+      class="filter-tab"
+      [class.active]="selectedFilter() === 'archived'"
+      (click)="filterMessages('archived')">
+      Archived
+      <span class="count">{{ getMessageCount('archived') }}</span>
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  @if (loading()) {
+    <div class="loading-state">
+      <div class="loading-spinner"></div>
+      <p>Loading messages...</p>
+    </div>
+  }
+
+  <!-- Messages List -->
+  @if (!loading() && filteredMessages().length > 0) {
+    <div class="messages-grid">
+      @for (message of filteredMessages(); track message.id) {
+        <div
+          class="message-card"
+          [class.unread]="message.status === 'new'"
+          (click)="viewMessage(message)">
+
+          <div class="message-header">
+            <div class="message-meta">
+              <h3>{{ message.name }}</h3>
+              @if (message.status === 'new') {
+                <span class="badge badge-new">New</span>
+              }
+              @if (message.status === 'archived') {
+                <span class="badge badge-archived">Archived</span>
+              }
+            </div>
+            <span class="message-date">{{ formatDate(message.createdAt) }}</span>
+          </div>
+
+          <div class="message-info">
+            <div class="info-row">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+              </svg>
+              <span>{{ message.email }}</span>
+            </div>
+            @if (message.phone) {
+              <div class="info-row">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                </svg>
+                <span>{{ message.phone }}</span>
+              </div>
+            }
+          </div>
+
+          <div class="message-type">
+            <span class="type-badge">{{ getInquiryTypeLabel(message.inquiryType) }}</span>
+            @if (message.packageInterest) {
+              <span class="package-badge">{{ message.packageInterest }}</span>
+            }
+          </div>
+
+          <p class="message-preview">{{ message.message }}</p>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Empty State -->
+  @if (!loading() && filteredMessages().length === 0) {
+    <div class="empty-state">
+      <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+        <polyline points="22,6 12,13 2,6"></polyline>
+      </svg>
+      <h3>No messages found</h3>
+      <p>There are no {{ selectedFilter() === 'all' ? '' : selectedFilter() }} messages at the moment.</p>
+    </div>
+  }
+
+  <!-- Message Detail Modal -->
+  @if (showMessageDetail() && selectedMessage()) {
+    <div class="message-modal" (click)="closeMessageDetail()">
+      <div class="message-modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Message Details</h2>
+          <button class="close-btn" (click)="closeMessageDetail()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <div class="detail-section">
+            <h3>Contact Information</h3>
+            <div class="detail-grid">
+              <div class="detail-item">
+                <label>Name:</label>
+                <span>{{ selectedMessage()!.name }}</span>
+              </div>
+              <div class="detail-item">
+                <label>Email:</label>
+                <span><a [href]="'mailto:' + selectedMessage()!.email">{{ selectedMessage()!.email }}</a></span>
+              </div>
+              @if (selectedMessage()!.phone) {
+                <div class="detail-item">
+                  <label>Phone:</label>
+                  <span><a [href]="'tel:' + selectedMessage()!.phone">{{ selectedMessage()!.phone }}</a></span>
+                </div>
+              }
+              <div class="detail-item">
+                <label>Preferred Contact:</label>
+                <span>{{ selectedMessage()!.preferredContact }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="detail-section">
+            <h3>Inquiry Details</h3>
+            <div class="detail-grid">
+              <div class="detail-item">
+                <label>Type:</label>
+                <span>{{ getInquiryTypeLabel(selectedMessage()!.inquiryType) }}</span>
+              </div>
+              @if (selectedMessage()!.packageInterest) {
+                <div class="detail-item">
+                  <label>Package Interest:</label>
+                  <span>{{ selectedMessage()!.packageInterest }}</span>
+                </div>
+              }
+              @if (selectedMessage()!.sessionDate) {
+                <div class="detail-item">
+                  <label>Session Date:</label>
+                  <span>{{ selectedMessage()!.sessionDate }}</span>
+                </div>
+              }
+              <div class="detail-item">
+                <label>Received:</label>
+                <span>{{ formatDate(selectedMessage()!.createdAt) }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="detail-section">
+            <h3>Message</h3>
+            <div class="message-content">
+              {{ selectedMessage()!.message }}
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn-secondary" (click)="closeMessageDetail()">Close</button>
+          @if (selectedMessage()!.status !== 'archived') {
+            <button class="btn-archive" (click)="archiveMessage(selectedMessage()!.id)">Archive</button>
+          }
+          <button class="btn-danger" (click)="deleteMessage(selectedMessage()!.id)">Delete</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>
