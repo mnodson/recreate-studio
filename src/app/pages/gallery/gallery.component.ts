@@ -208,7 +208,7 @@ export class GalleryComponent implements OnInit {
       // Generate 20 images per category
       for (let i = 1; i <= 20; i++) {
         const imageIndex = String(i).padStart(3, '0'); // Pads to 3 digits: 001, 002, etc.
-        const imageUrl = `portfolio/${folderName}/${folderName}${imageIndex}.jpg`;
+        const imageUrl = `portfolio/${folderName}/${folderName}${imageIndex}.webp`;
 
         this.allImages.push({
           id: imageId++,

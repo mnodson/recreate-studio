@@ -102,12 +102,14 @@ import { PersonalGallery } from '../../models/gallery.model';
               @for (imageUrl of galleryImagesForMasonry(); track imageUrl; let i = $index) {
                 <div
                   class="masonry-item"
+                  [class.loaded]="isImageLoaded(i)"
                   (click)="openLightbox(i)">
                   <img
                     [src]="getImageSrc(i, imageUrl)"
                     [alt]="gallery()!.title + ' - Image ' + (i + 1)"
                     loading="lazy"
                     decoding="async"
+                    (load)="onImageLoad(i)"
                     (error)="onImageError($event, imageUrl)">
                   <div class="image-overlay">
                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
@@ -194,6 +196,9 @@ export class SharedGalleryComponent implements OnInit, OnDestroy {
   thumbnails = signal<string[]>([]);
   generatingThumbnails = signal(false);
 
+  // Track loaded images to prevent layout shift
+  loadedImages = signal<Set<number>>(new Set());
+
   // Computed thumbnail size based on image count and viewport
   // For masonry layout, we want smaller thumbnails for better performance
   thumbnailSize = () => {
@@ -230,6 +235,9 @@ export class SharedGalleryComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     // Clean up thumbnail object URLs
     this.thumbnails().forEach(url => URL.revokeObjectURL(url));
+
+    // Clear loaded images set
+    this.loadedImages.set(new Set());
   }
 
   loadGallery(shareToken: string, password?: string) {
@@ -282,6 +290,9 @@ export class SharedGalleryComponent implements OnInit, OnDestroy {
   private async setupGalleryImages() {
     const gallery = this.gallery();
     if (!gallery || gallery.imageUrls.length === 0) return;
+
+    // Reset loaded images state
+    this.loadedImages.set(new Set());
 
     // Find first landscape image for hero
     let heroIndex = 0;
@@ -478,6 +489,17 @@ export class SharedGalleryComponent implements OnInit, OnDestroy {
       return thumbnail;
     }
     return this.imageService.getImageUrl(relativeUrl);
+  }
+
+  onImageLoad(index: number): void {
+    // Mark image as loaded to trigger fade-in animation
+    const loaded = new Set(this.loadedImages());
+    loaded.add(index);
+    this.loadedImages.set(loaded);
+  }
+
+  isImageLoaded(index: number): boolean {
+    return this.loadedImages().has(index);
   }
 
   onImageError(event: Event, relativeUrl: string): void {

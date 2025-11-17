@@ -62,7 +62,7 @@ import { AnalyticsService } from '../../services/analytics.service';
               <div class="service-card">
                 <h3>{{ service.name }}</h3>
                 <p>{{ service.description }}</p>
-                <span class="service-price">Starting at {{ service.price }}</span>
+                <span class="service-price">from {{ service.price }}</span>
               </div>
             }
           </div>
@@ -114,12 +114,12 @@ export class HomeComponent implements OnInit {
     {
       name: 'Portrait Photography',
       description: 'Professional individual and couple portraits with artistic vision and creative direction',
-      price: 'from $95'
+      price: '$95'
     },
     {
       name: 'Family Sessions',
       description: 'Capturing authentic family connections and timeless memories together',
-      price: 'from $495'
+      price: '$495'
     },
     {
       name: 'Senior Photography',
