@@ -29,12 +29,6 @@ interface GalleryImage {
       <section class="gallery-filters">
         <div class="container">
           <div class="filter-buttons">
-            <button 
-              class="filter-btn" 
-              [class.active]="selectedCategory === 'all'"
-              (click)="filterGallery('all')">
-              All Work
-            </button>
             @for (category of categories; track category) {
               <button 
                 class="filter-btn" 
@@ -144,7 +138,7 @@ interface GalleryImage {
   styleUrls: ['./gallery.component.scss']
 })
 export class GalleryComponent implements OnInit {
-  selectedCategory = 'all';
+  selectedCategory = 'Events';
   categories = [
     'Events',
     'Family Portraits',
@@ -188,7 +182,7 @@ export class GalleryComponent implements OnInit {
   ngOnInit() {
     this.analytics.trackPageView('gallery');
     this.generateGalleryImages();
-    this.filterGallery('all');
+    this.filterGallery('Events');
   }
 
   trackNavigation(destination: string) {
@@ -226,11 +220,7 @@ export class GalleryComponent implements OnInit {
     this.selectedCategory = category;
     this.currentLoadIndex = 0;
 
-    if (category === 'all') {
-      this._filteredImages = [...this.allImages];
-    } else {
-      this._filteredImages = this.allImages.filter(image => image.category === category);
-    }
+    this._filteredImages = this.allImages.filter(image => image.category === category);
 
     // Track category filter
     this.analytics.trackCustomEvent('gallery_filter', { category });
