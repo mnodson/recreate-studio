@@ -146,14 +146,14 @@ interface GalleryImage {
 export class GalleryComponent implements OnInit {
   selectedCategory = 'all';
   categories = [
-    'Babies & Children',
     'Events',
     'Family Portraits',
     'Headshots',
     'Holiday Mini Sessions',
     'Newborns',
     'Seniors',
-    'Sports'
+    'Sports',
+    'Babies & Children'
   ];
 
   // Mapping of display categories to folder names
