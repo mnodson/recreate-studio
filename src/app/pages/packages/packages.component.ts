@@ -160,7 +160,7 @@ interface SpecialtySection {
             <button class="btn-secondary" (click)="trackContactClick('quote')">Get Custom Quote</button>
           </div>
           <div class="contact-info">
-            <p>Call: (xxx) xxx-xxxx | Email: laura@recreate-studio.com</p>
+            <p>Call: (817) 501-1023 | Email: laura@recreate-studio.com</p>
           </div>
         </div>
       </section>
