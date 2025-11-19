@@ -20,7 +20,7 @@ import { AnalyticsService } from '../../services/analytics.service';
         </div>
         <div class="hero-image">
           <img
-            [src]="imageService.getImageUrl('portfolio/Events/Events005.jpg')"
+            [src]="imageService.getImageUrl('portfolio/Events/Events005.webp')"
             alt="Featured Photography"
             class="hero-photo"
             (error)="onImageError($event)">
