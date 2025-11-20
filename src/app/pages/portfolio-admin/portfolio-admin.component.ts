@@ -374,8 +374,8 @@ interface CategoryDisplay {
               <img [src]="imageToDelete()!.url" [alt]="imageToDelete()!.filename">
             </div>
             <p class="warning">
-              <strong>Warning:</strong> This will only remove the image from Firestore.
-              The image file will remain in the GitHub repository.
+              <strong>Warning:</strong> This will only remove the image metadata from the database.
+              The image file will remain in the hosting repository.
             </p>
             <div class="modal-actions">
               <button class="btn-danger" (click)="deleteImage()" [disabled]="deleting()">
@@ -416,7 +416,7 @@ interface CategoryDisplay {
               </select>
             </div>
             <p class="info">
-              <strong>Note:</strong> This updates the category metadata. The image file will remain in its current GitHub folder, but will display in the selected category.
+              <strong>Note:</strong> This updates the category metadata. The image file will remain in its current folder, but will display in the selected category.
             </p>
             <div class="modal-actions">
               <button
@@ -712,11 +712,11 @@ export class PortfolioAdminComponent implements OnInit {
 
     const folderPath = `portfolio/${category.folder}`;
 
-    this.uploadProgress.set(`Uploading ${this.selectedFiles().length} images to GitHub...`);
+    this.uploadProgress.set(`Uploading ${this.selectedFiles().length} images to respository...`);
 
     this.githubUploadService.uploadImagesToCustomPath(this.selectedFiles(), folderPath).subscribe({
       next: (results: UploadResult[]) => {
-        this.uploadProgress.set('Creating Firestore records...');
+        this.uploadProgress.set('Creating database records...');
         this.createFirestoreRecords(results, category.value);
       },
       error: (error: any) => {
@@ -772,7 +772,7 @@ export class PortfolioAdminComponent implements OnInit {
   }
 
   private checkDeploymentStatus(imageUrl: string, onDeployed?: () => void): void {
-    this.deploymentStatus.set('Checking GitHub Pages deployment...');
+    this.deploymentStatus.set('Checking deployment...');
 
     const maxAttempts = 60; // 5 minutes
     const intervalMs = 5000; // 5 seconds
@@ -926,7 +926,7 @@ export class PortfolioAdminComponent implements OnInit {
 
     const confirmed = confirm(
       `Are you sure you want to delete ${count} selected image${count > 1 ? 's' : ''}?\n\n` +
-      'This will remove the images from Firestore. The files will remain in the GitHub repository.'
+      'This will remove the image metadata from the database. The files will remain in the hosting repository.'
     );
 
     if (confirmed) {
