@@ -186,15 +186,6 @@
       }
     }
 
-    &:hover {
-      will-change: transform;
-      transform: translateY(-5px) translateZ(0);
-
-      @media (max-width: 768px) {
-        transform: none;
-      }
-    }
-
     &.featured {
       // No special treatment in masonry
       width: 100%;
