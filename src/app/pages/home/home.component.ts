@@ -20,7 +20,7 @@ import { AnalyticsService } from '../../services/analytics.service';
         </div>
         <div class="hero-image">
           <img
-            [src]="imageService.getImageUrl('portfolio/home/hero_1.webp')"
+            [src]="imageService.getImageUrl('home/hero_1.webp')"
             alt="Featured Photography"
             class="hero-photo"
             (error)="onImageError($event)">
@@ -39,7 +39,7 @@ import { AnalyticsService } from '../../services/analytics.service';
               <div class="highlight-item">
                 <div class="highlight-image">
                   <img
-                    [src]="imageService.getThumbnailUrl(highlight.imageUrl)"
+                    [src]="imageService.getImageUrl(highlight.imageUrl)"
                     [alt]="highlight.title"
                     (error)="onImageError($event)">
                 </div>
