@@ -48,6 +48,21 @@ export class GithubUploadService {
   }
 
   /**
+   * Upload multiple images to a custom path in GitHub repository as a single commit
+   * @param files - Array of File objects to upload
+   * @param customPath - Custom path in the repository (e.g., 'portfolio/Events')
+   * @returns Observable of upload results
+   */
+  uploadImagesToCustomPath(files: File[], customPath: string): Observable<UploadResult[]> {
+    if (!this.token) {
+      throw new Error('GitHub token not configured');
+    }
+
+    // Use Git Data API to batch upload all files in a single commit
+    return this.batchUploadFiles(files, customPath);
+  }
+
+  /**
    * Batch upload files using Git Data API (single commit for all files)
    */
   private batchUploadFiles(files: File[], basePath: string): Observable<UploadResult[]> {

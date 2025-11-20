@@ -20,7 +20,7 @@ import { AnalyticsService } from '../../services/analytics.service';
         </div>
         <div class="hero-image">
           <img
-            [src]="imageService.getImageUrl('portfolio/Events/Events005.webp')"
+            [src]="imageService.getImageUrl('portfolio/home/hero_1.webp')"
             alt="Featured Photography"
             class="hero-photo"
             (error)="onImageError($event)">
@@ -94,19 +94,19 @@ export class HomeComponent implements OnInit {
       title: 'Senior Portraits',
       description: 'Celebrating milestones with bold, creative portraits that capture personality, confidence, and that unforgettable senior year spirit',
       category: 'Senior',
-      imageUrl: 'senior/senior-001.jpg'
+      imageUrl: 'home/senior_1.webp'
     },
     {
       title: 'Family Portraits',
       description: 'Authentic moments of laughter, love, and connection. Beautifully preserved memories that grow more precious with every passing year',
       category: 'Family',
-      imageUrl: 'family/family-005.jpg'
+      imageUrl: 'home/family_1.jpg'
     },
     {
       title: 'Sports Photography',
       description: 'Freezing peak athletic performance in stunning clarity. The intensity, the triumph, the split-second moments that define champions',
       category: 'Sports',
-      imageUrl: 'sports/sports-003.jpg'
+      imageUrl: 'home/sports_1.jpg'
     }
   ];
 

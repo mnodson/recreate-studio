@@ -3,9 +3,11 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ImageService } from '../../services/image.service';
 import { AnalyticsService } from '../../services/analytics.service';
+import { PortfolioAdminService } from '../../services/portfolio-admin.service';
+import { PortfolioImage, PortfolioCategory } from '../../models/gallery.model';
 
 interface GalleryImage {
-  id: number;
+  id: string;
   title: string;
   category: string;
   description: string;
@@ -51,7 +53,7 @@ interface GalleryImage {
                 (click)="openLightbox(i)">
                 <div class="image-container">
                   <img
-                    [src]="imageService.getImageUrl(image.imageUrl)"
+                    [src]="image.imageUrl"
                     [alt]="image.title"
                     class="gallery-image"
                     loading="lazy"
@@ -118,7 +120,7 @@ interface GalleryImage {
           }
 
           <img
-            [src]="imageService.getImageUrl(getCurrentLightboxImage()!.imageUrl)"
+            [src]="getCurrentLightboxImage()!.imageUrl"
             [alt]="getCurrentLightboxImage()!.title"
             class="lightbox-image"
             (click)="$event.stopPropagation()">
@@ -164,7 +166,8 @@ export class GalleryComponent implements OnInit {
 
   constructor(
     public imageService: ImageService,
-    private analytics: AnalyticsService
+    private analytics: AnalyticsService,
+    private portfolioService: PortfolioAdminService
   ) {}
 
   allImages: GalleryImage[] = [];
@@ -181,8 +184,7 @@ export class GalleryComponent implements OnInit {
 
   ngOnInit() {
     this.analytics.trackPageView('gallery');
-    this.generateGalleryImages();
-    this.filterGallery('Events');
+    this.loadGalleryImagesFromFirestore();
   }
 
   trackNavigation(destination: string) {
@@ -190,30 +192,60 @@ export class GalleryComponent implements OnInit {
   }
 
   /**
-   * Dynamically generate gallery images based on category folder structure
-   * Creates 20 images per category using the naming pattern: FolderName001.jpg
+   * Load gallery images from Firestore
+   * Fetches only visible images from the portfolio-images collection
    */
-  private generateGalleryImages(): void {
-    let imageId = 1;
+  private loadGalleryImagesFromFirestore(): void {
+    // Query all visible images
+    this.portfolioService.queryImages({
+      visibleOnly: true,
+      orderBy: 'order',
+      orderDirection: 'asc'
+    }).subscribe({
+      next: (portfolioImages: PortfolioImage[]) => {
+        // Convert PortfolioImage to GalleryImage format
+        this.allImages = portfolioImages.map((img, index) => ({
+          id: img.id,
+          title: img.caption || `${this.getCategoryDisplayName(img.category)} ${index + 1}`,
+          category: this.getCategoryDisplayName(img.category),
+          description: img.caption || `${this.getCategoryDisplayName(img.category)} photography`,
+          imageUrl: img.url, // Using the full URL from Firestore
+          featured: index === 0 // Mark first image as featured
+        }));
 
-    this.categories.forEach(category => {
-      const folderName = this.categoryFolderMap[category];
-
-      // Generate 20 images per category
-      for (let i = 1; i <= 20; i++) {
-        const imageIndex = String(i).padStart(3, '0'); // Pads to 3 digits: 001, 002, etc.
-        const imageUrl = `portfolio/${folderName}/${folderName}${imageIndex}.webp`;
-
-        this.allImages.push({
-          id: imageId++,
-          title: `${category} ${i}`,
-          category: category,
-          description: `${category} photography`,
-          imageUrl: imageUrl,
-          featured: i === 1 // Mark first image of each category as featured
-        });
+        // Initialize with first category that has images
+        if (this.allImages.length > 0) {
+          const firstCategory = this.allImages[0].category;
+          this.filterGallery(firstCategory);
+        } else {
+          // If no images in Firestore, default to Events
+          this.filterGallery('Events');
+        }
+      },
+      error: (error) => {
+        console.error('Error loading portfolio images:', error);
+        // Fall back to empty array if there's an error
+        this.allImages = [];
+        this.filterGallery('Events');
       }
     });
+  }
+
+  /**
+   * Convert category folder name to display name
+   */
+  private getCategoryDisplayName(category: PortfolioCategory): string {
+    const reverseMap: { [key: string]: string } = {
+      'BabiesChildren': 'Babies & Children',
+      'Events': 'Events',
+      'FamilyPortraits': 'Family Portraits',
+      'Headshots': 'Headshots',
+      'HolidayMiniSessions': 'Holiday Mini Sessions',
+      'Newborns': 'Newborns',
+      'Seniors': 'Seniors',
+      'Sports': 'Sports'
+    };
+    return reverseMap[category] || category;
   }
 
   filterGallery(category: string) {
@@ -254,7 +286,7 @@ export class GalleryComponent implements OnInit {
     this.hasMoreImages = this.currentLoadIndex < this._filteredImages.length;
   }
 
-  trackByImageId(_index: number, image: GalleryImage): number {
+  trackByImageId(_index: number, image: GalleryImage): string {
     return image.id;
   }
 

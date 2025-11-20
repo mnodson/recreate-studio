@@ -30,6 +30,17 @@ service cloud.firestore {
                            || resource.data.shareExpiresAt > request.time);
     }
 
+    // Portfolio Images Collection
+    // - Authenticated users (admins) have full access
+    // - Public users can only read images where isVisible is true
+    match /portfolio-images/{imageId} {
+      // Authenticated users (admins) have full access
+      allow read, write: if request.auth != null;
+
+      // Public users can read only visible portfolio images
+      allow get, list: if resource.data.isVisible == true;
+    }
+
     // Default deny all other collections
     match /{document=**} {
       allow read, write: if false;

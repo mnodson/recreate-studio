@@ -29,6 +29,11 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'portfolio-admin',
+    loadComponent: () => import('./pages/portfolio-admin/portfolio-admin.component').then(m => m.PortfolioAdminComponent),
+    canActivate: [authGuard]
+  },
+  {
     path: 'message-center',
     loadComponent: () => import('./pages/message-center/message-center').then(m => m.MessageCenterComponent),
     canActivate: [authGuard]

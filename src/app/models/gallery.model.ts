@@ -114,3 +114,105 @@ export interface GalleryStats {
   totalViews: number;
   averageViewsPerGallery: number;
 }
+
+/**
+ * Portfolio categories
+ */
+export type PortfolioCategory =
+  | 'Events'
+  | 'FamilyPortraits'
+  | 'Headshots'
+  | 'HolidayMiniSessions'
+  | 'Newborns'
+  | 'Seniors'
+  | 'Sports'
+  | 'BabiesChildren';
+
+/**
+ * Represents a portfolio image in Firestore
+ */
+export interface PortfolioImage {
+  /** Unique identifier for the image */
+  id: string;
+
+  /** Category the image belongs to */
+  category: PortfolioCategory;
+
+  /** Filename of the image */
+  filename: string;
+
+  /** Full path in GitHub repo (e.g., 'portfolio/Newborns/Newborns001.webp') */
+  path: string;
+
+  /** Full URL to the image */
+  url: string;
+
+  /** Whether the image is visible in the portfolio gallery */
+  isVisible: boolean;
+
+  /** Display order within the category */
+  order: number;
+
+  /** Upload timestamp */
+  uploadedAt: Date;
+
+  /** Optional caption or description */
+  caption?: string;
+
+  /** File size in bytes */
+  fileSize?: number;
+
+  /** Image dimensions */
+  dimensions?: {
+    width: number;
+    height: number;
+  };
+}
+
+/**
+ * Data Transfer Object for creating portfolio images
+ */
+export interface CreatePortfolioImageRequest {
+  category: PortfolioCategory;
+  filename: string;
+  path: string;
+  url: string;
+  isVisible?: boolean;
+  order?: number;
+  caption?: string;
+  fileSize?: number;
+  dimensions?: {
+    width: number;
+    height: number;
+  };
+}
+
+/**
+ * Options for querying portfolio images
+ */
+export interface PortfolioImageQueryOptions {
+  /** Filter by category */
+  category?: PortfolioCategory;
+
+  /** Filter by visibility */
+  visibleOnly?: boolean;
+
+  /** Limit number of results */
+  limit?: number;
+
+  /** Order by field */
+  orderBy?: 'order' | 'uploadedAt' | 'filename';
+
+  /** Order direction */
+  orderDirection?: 'asc' | 'desc';
+}
+
+/**
+ * Statistics for portfolio images
+ */
+export interface PortfolioStats {
+  totalImages: number;
+  visibleImages: number;
+  hiddenImages: number;
+  imagesByCategory: Record<PortfolioCategory, number>;
+}
