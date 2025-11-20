@@ -70,13 +70,23 @@
   }
 
   .filter-buttons {
-    display: flex;
-    justify-content: center;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
     gap: 1rem;
-    flex-wrap: wrap;
+    max-width: 1000px;
+    margin: 0 auto;
+
+    @media (max-width: 1024px) {
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 0.75rem;
+    }
 
     @media (max-width: 768px) {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
       gap: 0.5rem;
+      max-width: 100%;
     }
 
     .filter-btn {
@@ -89,6 +99,9 @@
       transition: all 0.3s ease;
       font-weight: 300;
       letter-spacing: 1px;
+      text-align: center;
+      width: 100%;
+      white-space: nowrap;
 
       @media (max-width: 768px) {
         padding: 0.5rem 0.875rem;
@@ -96,6 +109,7 @@
         border-width: 1px;
         border-radius: 20px;
         letter-spacing: 0.5px;
+        width: auto;
       }
 
       &:hover {

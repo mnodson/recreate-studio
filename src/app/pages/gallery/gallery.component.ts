@@ -206,17 +206,26 @@ export class GalleryComponent implements OnInit {
         // Convert PortfolioImage to GalleryImage format
         this.allImages = portfolioImages.map((img, index) => ({
           id: img.id,
-          title: img.caption || `${this.getCategoryDisplayName(img.category)} ${index + 1}`,
+          title: img.caption || `${this.getCategoryDisplayName(img.category)}`,
           category: this.getCategoryDisplayName(img.category),
           description: img.caption || `${this.getCategoryDisplayName(img.category)} photography`,
           imageUrl: img.url, // Using the full URL from Firestore
-          featured: index === 0 // Mark first image as featured
+          featured: false // Will be set after filtering
         }));
 
-        // Initialize with first category that has images
+        // Initialize with first category from categories array that has images
         if (this.allImages.length > 0) {
-          const firstCategory = this.allImages[0].category;
-          this.filterGallery(firstCategory);
+          // Find first category from our categories array that has images
+          const firstCategoryWithImages = this.categories.find(cat =>
+            this.allImages.some(img => img.category === cat)
+          );
+
+          if (firstCategoryWithImages) {
+            this.filterGallery(firstCategoryWithImages);
+          } else {
+            // Fallback to first image's category if none match
+            this.filterGallery(this.allImages[0].category);
+          }
         } else {
           // If no images in Firestore, default to Events
           this.filterGallery('Events');
@@ -262,6 +271,10 @@ export class GalleryComponent implements OnInit {
 
   loadInitialImages() {
     this.displayedImages = this._filteredImages.slice(0, this.imagesPerLoad);
+    // Mark first image in filtered results as featured
+    if (this.displayedImages.length > 0) {
+      this.displayedImages[0].featured = true;
+    }
     this.currentLoadIndex = this.imagesPerLoad;
     this.updateHasMoreImages();
   }

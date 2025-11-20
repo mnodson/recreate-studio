@@ -237,6 +237,30 @@ interface CategoryDisplay {
         </div>
       </section>
 
+      <!-- Bulk Actions Bar -->
+      @if (selectedCount > 0) {
+        <section class="bulk-actions-bar">
+          <div class="bulk-actions-content">
+            <span class="selection-count">{{ selectedCount }} image{{ selectedCount > 1 ? 's' : '' }} selected</span>
+            <div class="bulk-actions-buttons">
+              <button class="btn-secondary" (click)="deselectAll()">
+                Deselect All
+              </button>
+              <button
+                class="btn-danger"
+                (click)="confirmBulkDelete()"
+                [disabled]="bulkDeleting()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+                {{ bulkDeleting() ? 'Deleting...' : 'Delete Selected' }}
+              </button>
+            </div>
+          </div>
+        </section>
+      }
+
       <!-- Images Grid -->
       <section class="images-section">
         @if (loading()) {
@@ -257,8 +281,17 @@ interface CategoryDisplay {
         } @else {
           <div class="images-grid">
             @for (image of displayedImages(); track image.id) {
-              <div class="image-card" [class.hidden]="!image.isVisible">
+              <div class="image-card" [class.hidden]="!image.isVisible" [class.selected]="selectedImageIds().has(image.id)">
                 <div class="image-wrapper">
+                  <div class="checkbox-wrapper">
+                    <input
+                      type="checkbox"
+                      [id]="'checkbox-' + image.id"
+                      [checked]="selectedImageIds().has(image.id)"
+                      (change)="toggleImageSelection(image.id)"
+                      class="image-checkbox">
+                    <label [for]="'checkbox-' + image.id" class="checkbox-label"></label>
+                  </div>
                   <img
                     [src]="image.url"
                     [alt]="image.filename"
@@ -443,6 +476,10 @@ export class PortfolioAdminComponent implements OnInit {
   // Delete
   imageToDelete = signal<PortfolioImage | null>(null);
   deleting = signal(false);
+
+  // Bulk selection and delete
+  selectedImageIds = signal<Set<string>>(new Set());
+  bulkDeleting = signal(false);
 
   // Move to category
   imageToMove = signal<PortfolioImage | null>(null);
@@ -841,24 +878,86 @@ export class PortfolioAdminComponent implements OnInit {
 
     this.portfolioService.deleteImage(image.id).subscribe({
       next: () => {
-        // Remove from local state
-        const images = this.portfolioImages().filter(img => img.id !== image.id);
-        this.portfolioImages.set(images);
-
-        // Reload stats
-        this.loadStats();
-
         this.analyticsService.trackCustomEvent('portfolio_image_deleted', {
           imageId: image.id,
           category: image.category
         });
 
         this.cancelDelete();
+
+        // Refresh images and stats after deletion
+        this.loadStats();
+        this.loadImages();
       },
       error: (error: Error) => {
         console.error('Error deleting image:', error);
         alert('Failed to delete image. Please try again.');
         this.deleting.set(false);
+      }
+    });
+  }
+
+  toggleImageSelection(imageId: string): void {
+    const selected = new Set(this.selectedImageIds());
+    if (selected.has(imageId)) {
+      selected.delete(imageId);
+    } else {
+      selected.add(imageId);
+    }
+    this.selectedImageIds.set(selected);
+  }
+
+  selectAll(): void {
+    const allIds = new Set(this.displayedImages().map(img => img.id));
+    this.selectedImageIds.set(allIds);
+  }
+
+  deselectAll(): void {
+    this.selectedImageIds.set(new Set());
+  }
+
+  get selectedCount(): number {
+    return this.selectedImageIds().size;
+  }
+
+  confirmBulkDelete(): void {
+    const count = this.selectedCount;
+    if (count === 0) return;
+
+    const confirmed = confirm(
+      `Are you sure you want to delete ${count} selected image${count > 1 ? 's' : ''}?\n\n` +
+      'This will remove the images from Firestore. The files will remain in the GitHub repository.'
+    );
+
+    if (confirmed) {
+      this.bulkDeleteImages();
+    }
+  }
+
+  bulkDeleteImages(): void {
+    const imageIds = Array.from(this.selectedImageIds());
+    if (imageIds.length === 0) return;
+
+    this.bulkDeleting.set(true);
+
+    this.portfolioService.deleteImagesBatch(imageIds).subscribe({
+      next: () => {
+        this.analyticsService.trackCustomEvent('portfolio_images_bulk_deleted', {
+          count: imageIds.length
+        });
+
+        // Clear selection
+        this.deselectAll();
+        this.bulkDeleting.set(false);
+
+        // Refresh images and stats after deletion
+        this.loadStats();
+        this.loadImages();
+      },
+      error: (error: Error) => {
+        console.error('Error bulk deleting images:', error);
+        alert('Failed to delete images. Please try again.');
+        this.bulkDeleting.set(false);
       }
     });
   }
