@@ -407,6 +407,43 @@
       }
     }
   }
+
+  // Fun Instagram link styling
+  .instagram-link {
+    color: #c084fc;
+    text-decoration: none;
+    font-weight: 400;
+    position: relative;
+    display: inline-block;
+    background: linear-gradient(135deg, #c084fc, #8b5cf6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    transition: all 0.3s ease;
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: linear-gradient(135deg, #c084fc, #8b5cf6);
+      transition: width 0.3s ease;
+    }
+
+    &:hover {
+      transform: translateX(3px);
+
+      &::after {
+        width: 100%;
+      }
+    }
+
+    &:active {
+      transform: scale(0.98);
+    }
+  }
 }
 
 // Success Message
