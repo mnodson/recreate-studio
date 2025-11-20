@@ -7,6 +7,7 @@ import { ImageService } from '../../services/image.service';
 import { GithubUploadService, UploadResult } from '../../services/github-upload.service';
 import { AuthService } from '../../services/auth.service';
 import { AnalyticsService } from '../../services/analytics.service';
+import { ContactMessageService } from '../../services/contact-message.service';
 import {
   PortfolioImage,
   PortfolioCategory,
@@ -39,7 +40,21 @@ interface CategoryDisplay {
         </div>
         <div class="header-actions">
           <button class="btn-secondary" (click)="navigateToGalleryAdmin()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
             Client Galleries
+          </button>
+          <button class="btn-secondary messages-btn" (click)="navigateToMessageCenter()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+              <polyline points="22,6 12,13 2,6"></polyline>
+            </svg>
+            Messages
+            @if (unreadMessageCount() > 0) {
+              <span class="message-badge">{{ unreadMessageCount() }}</span>
+            }
           </button>
           <button class="btn-secondary" (click)="logout()">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -124,8 +139,15 @@ interface CategoryDisplay {
                 multiple
                 (change)="onFilesSelected($event)"
                 class="file-input">
-              <small>Select JPEG, PNG, GIF, or WebP images (max 25MB each)</small>
+              <small>Select JPEG, PNG, GIF, or WebP images (max 25MB each). Images will be automatically converted to WebP format for optimal performance.</small>
             </div>
+
+            @if (convertingToWebP()) {
+              <div class="conversion-progress">
+                <div class="progress-spinner"></div>
+                <span>{{ conversionProgress() }}</span>
+              </div>
+            }
 
             @if (generatingThumbnails()) {
               <div class="thumbnail-loading">
@@ -134,7 +156,7 @@ interface CategoryDisplay {
               </div>
             }
 
-            @if (imagePreviews().length > 0 && !generatingThumbnails()) {
+            @if (imagePreviews().length > 0 && !generatingThumbnails() && !convertingToWebP()) {
               <div class="image-previews-section">
                 <label>Selected Images ({{ selectedFiles().length }})</label>
                 <div class="image-previews" [style.--thumbnail-size.px]="thumbnailSize()">
@@ -173,10 +195,10 @@ interface CategoryDisplay {
               <button
                 class="btn-primary"
                 (click)="uploadImages()"
-                [disabled]="!selectedCategory || selectedFiles().length === 0 || uploading()">
+                [disabled]="!selectedCategory || selectedFiles().length === 0 || uploading() || convertingToWebP()">
                 {{ uploading() ? 'Uploading...' : 'Upload Images' }}
               </button>
-              <button class="btn-secondary" (click)="cancelUpload()" [disabled]="uploading()">
+              <button class="btn-secondary" (click)="cancelUpload()" [disabled]="uploading() || convertingToWebP()">
                 Cancel
               </button>
             </div>
@@ -443,9 +465,11 @@ export class PortfolioAdminComponent implements OnInit {
   private githubUploadService = inject(GithubUploadService);
   private router = inject(Router);
   private analyticsService = inject(AnalyticsService);
+  private contactMessageService = inject(ContactMessageService);
 
   // Statistics
   stats = signal<PortfolioStats | null>(null);
+  unreadMessageCount = signal(0);
 
   // Upload form
   showUploadForm = signal(false);
@@ -461,6 +485,8 @@ export class PortfolioAdminComponent implements OnInit {
   uploadError = signal('');
   uploadedCount = signal(0);
   deploymentStatus = signal('');
+  convertingToWebP = signal(false);
+  conversionProgress = signal('');
 
   // Filtering
   filterCategory = '';
@@ -501,6 +527,7 @@ export class PortfolioAdminComponent implements OnInit {
     this.analyticsService.trackPageView('Portfolio Admin');
     this.loadStats();
     this.loadImages();
+    this.loadUnreadMessageCount();
   }
 
   loadStats(): void {
@@ -589,7 +616,7 @@ export class PortfolioAdminComponent implements OnInit {
     this.validateAndProcessFiles(files);
   }
 
-  validateAndProcessFiles(files: File[]): void {
+  async validateAndProcessFiles(files: File[]): Promise<void> {
     const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25MB
     const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
 
@@ -616,8 +643,32 @@ export class PortfolioAdminComponent implements OnInit {
     }
 
     if (validFiles.length > 0) {
-      this.selectedFiles.set(validFiles);
-      this.generateThumbnails(validFiles);
+      // Convert to WebP format
+      this.convertingToWebP.set(true);
+      this.conversionProgress.set('Converting images to WebP format...');
+
+      try {
+        const webpFiles = await this.imageService.convertMultipleToWebP(
+          validFiles,
+          0.85, // 85% quality
+          (current: number, total: number) => {
+            this.conversionProgress.set(`Converting to WebP: ${current}/${total}`);
+          }
+        );
+
+        this.selectedFiles.set(webpFiles);
+        this.convertingToWebP.set(false);
+        this.conversionProgress.set('');
+        this.generateThumbnails(webpFiles);
+      } catch (error) {
+        console.error('Error converting to WebP:', error);
+        this.uploadError.set('Failed to convert images to WebP. Using original files.');
+        this.convertingToWebP.set(false);
+        this.conversionProgress.set('');
+        // Fall back to original files
+        this.selectedFiles.set(validFiles);
+        this.generateThumbnails(validFiles);
+      }
     }
   }
 
@@ -832,6 +883,8 @@ export class PortfolioAdminComponent implements OnInit {
     this.uploadError.set('');
     this.uploadedCount.set(0);
     this.deploymentStatus.set('');
+    this.convertingToWebP.set(false);
+    this.conversionProgress.set('');
   }
 
   toggleVisibility(image: PortfolioImage): void {
@@ -1019,8 +1072,21 @@ export class PortfolioAdminComponent implements OnInit {
     });
   }
 
+  async loadUnreadMessageCount() {
+    try {
+      const count = await this.contactMessageService.getUnreadCount();
+      this.unreadMessageCount.set(count);
+    } catch (error) {
+      console.error('Error loading unread message count:', error);
+    }
+  }
+
   navigateToGalleryAdmin(): void {
     this.router.navigate(['/gallery-admin']);
+  }
+
+  navigateToMessageCenter(): void {
+    this.router.navigate(['/message-center']);
   }
 
   logout(): void {

@@ -78,4 +78,100 @@ export class ImageService {
   getBaseUrl(): string {
     return this.baseUrl;
   }
+
+  /**
+   * Convert an image file to WebP format
+   * @param file - Original image file (JPEG, PNG, etc.)
+   * @param quality - WebP quality (0-1, default: 0.85)
+   * @returns Promise that resolves to WebP File
+   */
+  async convertToWebP(file: File, quality: number = 0.85): Promise<File> {
+    return new Promise((resolve, reject) => {
+      // Create an image element to load the file
+      const img = new Image();
+      const reader = new FileReader();
+
+      reader.onload = (e) => {
+        img.onload = () => {
+          // Create canvas and draw image
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            reject(new Error('Failed to get canvas context'));
+            return;
+          }
+
+          ctx.drawImage(img, 0, 0);
+
+          // Convert to WebP blob
+          canvas.toBlob(
+            (blob) => {
+              if (!blob) {
+                reject(new Error('Failed to convert image to WebP'));
+                return;
+              }
+
+              // Create new filename with .webp extension
+              const originalName = file.name.replace(/\.[^/.]+$/, '');
+              const webpFile = new File([blob], `${originalName}.webp`, {
+                type: 'image/webp',
+                lastModified: Date.now()
+              });
+
+              resolve(webpFile);
+            },
+            'image/webp',
+            quality
+          );
+        };
+
+        img.onerror = () => {
+          reject(new Error('Failed to load image'));
+        };
+
+        img.src = e.target!.result as string;
+      };
+
+      reader.onerror = () => {
+        reject(new Error('Failed to read file'));
+      };
+
+      reader.readAsDataURL(file);
+    });
+  }
+
+  /**
+   * Convert multiple image files to WebP format
+   * @param files - Array of image files
+   * @param quality - WebP quality (0-1, default: 0.85)
+   * @param onProgress - Optional callback for progress updates
+   * @returns Promise that resolves to array of WebP files
+   */
+  async convertMultipleToWebP(
+    files: File[],
+    quality: number = 0.85,
+    onProgress?: (current: number, total: number) => void
+  ): Promise<File[]> {
+    const converted: File[] = [];
+
+    for (let i = 0; i < files.length; i++) {
+      try {
+        const webpFile = await this.convertToWebP(files[i], quality);
+        converted.push(webpFile);
+
+        if (onProgress) {
+          onProgress(i + 1, files.length);
+        }
+      } catch (error) {
+        console.error(`Failed to convert ${files[i].name}:`, error);
+        // If conversion fails, use original file
+        converted.push(files[i]);
+      }
+    }
+
+    return converted;
+  }
 }

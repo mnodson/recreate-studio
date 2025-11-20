@@ -139,8 +139,17 @@ import {
               (change)="onFilesSelected($event)"
               #fileInput
               class="file-input">
-            <small>Select JPEG, PNG, GIF, or WebP images (max 25MB each)</small>
+            <small>Select JPEG, PNG, GIF, or WebP images (max 25MB each). Images will be automatically converted to WebP format for optimal performance.</small>
           </div>
+
+          @if (convertingToWebP()) {
+            <div class="form-group">
+              <div class="conversion-progress">
+                <div class="progress-spinner"></div>
+                <span>{{ conversionProgress() }}</span>
+              </div>
+            </div>
+          }
 
           @if (generatingThumbnails()) {
             <div class="form-group">
@@ -151,7 +160,7 @@ import {
             </div>
           }
 
-          @if (imagePreviews().length > 0 && !generatingThumbnails()) {
+          @if (imagePreviews().length > 0 && !generatingThumbnails() && !convertingToWebP()) {
             <div class="form-group">
               <label>Selected Images ({{ selectedFiles().length }})</label>
               <div class="image-previews" [style.--thumbnail-size.px]="thumbnailSize()">
@@ -180,10 +189,10 @@ import {
           }
 
           <div class="form-actions">
-            <button type="submit" class="btn-primary" [disabled]="creating() || uploading()">
+            <button type="submit" class="btn-primary" [disabled]="creating() || uploading() || convertingToWebP()">
               {{ uploading() ? uploadProgress() : (creating() ? 'Creating...' : 'Create Gallery') }}
             </button>
-            <button type="button" class="btn-secondary" (click)="toggleCreateForm()">
+            <button type="button" class="btn-secondary" (click)="toggleCreateForm()" [disabled]="convertingToWebP()">
               Cancel
             </button>
           </div>
@@ -577,6 +586,8 @@ export class GalleryAdminComponent implements OnInit, OnDestroy {
   uploadProgress = signal<string>('');
   imagePreviews = signal<string[]>([]);
   generatingThumbnails = signal(false);
+  convertingToWebP = signal(false);
+  conversionProgress = signal('');
 
   // Deployment status
   deploymentStatus = signal<'checking' | 'deploying' | 'ready' | 'error' | null>(null);
@@ -694,9 +705,11 @@ export class GalleryAdminComponent implements OnInit, OnDestroy {
     this.imagePreviews.set([]);
     this.uploadProgress.set('');
     this.generatingThumbnails.set(false);
+    this.convertingToWebP.set(false);
+    this.conversionProgress.set('');
   }
 
-  onFilesSelected(event: Event) {
+  async onFilesSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     if (!input.files || input.files.length === 0) return;
 
@@ -715,12 +728,39 @@ export class GalleryAdminComponent implements OnInit, OnDestroy {
       }
     }
 
-    this.selectedFiles.set(validFiles);
-    this.generateImagePreviews(validFiles);
-
-    // Track file selection
     if (validFiles.length > 0) {
-      this.analytics.trackAdminImageUpload(validFiles.length, 'file_picker');
+      // Convert to WebP format
+      this.convertingToWebP.set(true);
+      this.conversionProgress.set('Converting images to WebP format...');
+
+      try {
+        const webpFiles = await this.imageService.convertMultipleToWebP(
+          validFiles,
+          0.85, // 85% quality
+          (current: number, total: number) => {
+            this.conversionProgress.set(`Converting to WebP: ${current}/${total}`);
+          }
+        );
+
+        this.selectedFiles.set(webpFiles);
+        this.convertingToWebP.set(false);
+        this.conversionProgress.set('');
+        this.generateImagePreviews(webpFiles);
+
+        // Track file selection
+        this.analytics.trackAdminImageUpload(webpFiles.length, 'file_picker');
+      } catch (error) {
+        console.error('Error converting to WebP:', error);
+        this.showToastMessage('Failed to convert images to WebP. Using original files.');
+        this.convertingToWebP.set(false);
+        this.conversionProgress.set('');
+        // Fall back to original files
+        this.selectedFiles.set(validFiles);
+        this.generateImagePreviews(validFiles);
+
+        // Track file selection
+        this.analytics.trackAdminImageUpload(validFiles.length, 'file_picker');
+      }
     }
   }
 

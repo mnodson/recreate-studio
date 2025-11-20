@@ -1,7 +1,9 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { ContactMessageService, ContactMessage } from '../../services/contact-message.service';
 import { AnalyticsService } from '../../services/analytics.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-message-center',
@@ -20,7 +22,9 @@ export class MessageCenterComponent implements OnInit {
 
   constructor(
     private contactMessageService: ContactMessageService,
-    private analytics: AnalyticsService
+    private analytics: AnalyticsService,
+    private router: Router,
+    private authService: AuthService
   ) {}
 
   async ngOnInit() {
@@ -130,5 +134,18 @@ export class MessageCenterComponent implements OnInit {
       'general': 'General Inquiry'
     };
     return labels[type] || type;
+  }
+
+  navigateToPortfolioAdmin(): void {
+    this.router.navigate(['/portfolio-admin']);
+  }
+
+  navigateToGalleryAdmin(): void {
+    this.router.navigate(['/gallery-admin']);
+  }
+
+  logout(): void {
+    this.authService.signOut();
+    this.router.navigate(['/login']);
   }
 }

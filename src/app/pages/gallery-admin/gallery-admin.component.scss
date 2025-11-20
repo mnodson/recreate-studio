@@ -937,6 +937,31 @@
   }
 }
 
+// WebP Conversion Progress
+.conversion-progress {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 2rem;
+  background: rgba(147, 51, 234, 0.15);
+  border-radius: 8px;
+  border: 1px solid rgba(192, 132, 252, 0.3);
+  color: #e6d7ff;
+
+  span {
+    font-weight: 500;
+  }
+
+  .progress-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(192, 132, 252, 0.2);
+    border-top: 2px solid #c084fc;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+}
+
 // Thumbnail Loading
 .thumbnail-loading {
   display: flex;
