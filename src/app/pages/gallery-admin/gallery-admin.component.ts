@@ -162,18 +162,29 @@ import {
 
           @if (imagePreviews().length > 0 && !generatingThumbnails() && !convertingToWebP()) {
             <div class="form-group">
-              <label>Selected Images ({{ selectedFiles().length }})</label>
+              <label>Selected Images ({{ selectedFiles().length }}) - Click an image to set as hero</label>
               <div class="image-previews" [style.--thumbnail-size.px]="thumbnailSize()">
                 @for (preview of imagePreviews(); track preview; let i = $index) {
-                  <div class="preview-item">
+                  <div
+                    class="preview-item"
+                    [class.hero-selected]="selectedHeroIndex() === i"
+                    (click)="selectHeroImage(i)">
                     <img
                       [src]="preview"
                       [alt]="selectedFiles()[i].name"
                       loading="lazy"
                       decoding="async">
+                    @if (selectedHeroIndex() === i) {
+                      <div class="hero-badge">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                        </svg>
+                        <span>Hero</span>
+                      </div>
+                    }
                     <div class="preview-overlay">
                       <span class="preview-filename">{{ selectedFiles()[i].name }}</span>
-                      <button type="button" class="btn-remove" (click)="removeFile(i)">×</button>
+                      <button type="button" class="btn-remove" (click)="removeFile(i); $event.stopPropagation()">×</button>
                     </div>
                   </div>
                 }
@@ -589,6 +600,9 @@ export class GalleryAdminComponent implements OnInit, OnDestroy {
   convertingToWebP = signal(false);
   conversionProgress = signal('');
 
+  // Hero image selection (index of selected hero image, defaults to 0)
+  selectedHeroIndex = signal<number>(0);
+
   // Deployment status
   deploymentStatus = signal<'checking' | 'deploying' | 'ready' | 'error' | null>(null);
   private deploymentCheckInterval: any = null;
@@ -707,6 +721,7 @@ export class GalleryAdminComponent implements OnInit, OnDestroy {
     this.generatingThumbnails.set(false);
     this.convertingToWebP.set(false);
     this.conversionProgress.set('');
+    this.selectedHeroIndex.set(0);
   }
 
   async onFilesSelected(event: Event) {
@@ -761,6 +776,12 @@ export class GalleryAdminComponent implements OnInit, OnDestroy {
         // Track file selection
         this.analytics.trackAdminImageUpload(validFiles.length, 'file_picker');
       }
+    }
+  }
+
+  selectHeroImage(index: number) {
+    if (index >= 0 && index < this.selectedFiles().length) {
+      this.selectedHeroIndex.set(index);
     }
   }
 
@@ -854,6 +875,16 @@ export class GalleryAdminComponent implements OnInit, OnDestroy {
 
     this.selectedFiles.set(files);
     this.imagePreviews.set(previews);
+
+    // Adjust hero index if necessary
+    const currentHeroIndex = this.selectedHeroIndex();
+    if (index === currentHeroIndex) {
+      // If removed image was hero, reset to first image
+      this.selectedHeroIndex.set(0);
+    } else if (index < currentHeroIndex) {
+      // If removed image was before hero, decrement hero index
+      this.selectedHeroIndex.set(currentHeroIndex - 1);
+    }
   }
 
   createGallery(event: Event) {
@@ -881,12 +912,16 @@ export class GalleryAdminComponent implements OnInit, OnDestroy {
         // Extract image paths from upload results
         const imageUrls = uploadResults.map(result => result.path);
 
+        // Set the hero image URL based on selected index
+        const heroImageUrl = imageUrls[this.selectedHeroIndex()];
+
         const request: CreateGalleryRequest = {
           title: this.newGallery.title!,
           clientName: this.newGallery.clientName!,
           clientEmail: this.newGallery.clientEmail,
           description: this.newGallery.description,
           imageUrls,
+          heroImageUrl,
           expirationDays: this.newGallery.expirationDays || 30,
           password: this.newGallery.password || undefined
         };

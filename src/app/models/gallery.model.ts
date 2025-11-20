@@ -20,6 +20,9 @@ export interface PersonalGallery {
   /** Array of image paths selected from the main portfolio */
   imageUrls: string[];
 
+  /** Optional custom hero image URL for the gallery header */
+  heroImageUrl?: string;
+
   /** Unique shareable link identifier */
   shareToken: string;
 
@@ -71,6 +74,7 @@ export interface CreateGalleryRequest {
   clientName: string;
   clientEmail?: string;
   imageUrls: string[];
+  heroImageUrl?: string;
   expirationDays: number;
   password?: string;
   metadata?: GalleryMetadata;

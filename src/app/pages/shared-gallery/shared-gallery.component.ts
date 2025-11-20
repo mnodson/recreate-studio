@@ -103,7 +103,7 @@ import { PersonalGallery } from '../../models/gallery.model';
                 <div
                   class="masonry-item"
                   [class.loaded]="isImageLoaded(i)"
-                  (click)="openLightbox(i)">
+                  (click)="openLightbox(i, $event)">
                   <img
                     [src]="getImageSrc(i, imageUrl)"
                     [alt]="gallery()!.title + ' - Image ' + (i + 1)"
@@ -294,19 +294,22 @@ export class SharedGalleryComponent implements OnInit, OnDestroy {
     // Reset loaded images state
     this.loadedImages.set(new Set());
 
-    // Find first landscape image for hero
-    let heroIndex = 0;
-    for (let i = 0; i < gallery.imageUrls.length; i++) {
-      const imageUrl = this.imageService.getImageUrl(gallery.imageUrls[i]);
-      const isLandscape = await this.isImageLandscape(imageUrl);
-      if (isLandscape) {
-        heroIndex = i;
-        break;
+    // Use custom hero image if available, otherwise find first landscape image
+    if (gallery.heroImageUrl) {
+      this.heroImageUrl.set(gallery.heroImageUrl);
+    } else {
+      // Find first landscape image for hero
+      let heroIndex = 0;
+      for (let i = 0; i < gallery.imageUrls.length; i++) {
+        const imageUrl = this.imageService.getImageUrl(gallery.imageUrls[i]);
+        const isLandscape = await this.isImageLandscape(imageUrl);
+        if (isLandscape) {
+          heroIndex = i;
+          break;
+        }
       }
+      this.heroImageUrl.set(gallery.imageUrls[heroIndex]);
     }
-
-    // Set hero image
-    this.heroImageUrl.set(gallery.imageUrls[heroIndex]);
 
     // Set remaining images for masonry grid (all images, hero will be in the grid too for simplicity)
     this.galleryImagesForMasonry.set(gallery.imageUrls);
@@ -434,7 +437,7 @@ export class SharedGalleryComponent implements OnInit, OnDestroy {
     });
   }
 
-  openLightbox(index: number) {
+  openLightbox(index: number, event?: Event) {
     this.currentImageIndex.set(index);
     this.showLightbox.set(true);
     document.body.style.overflow = 'hidden';
