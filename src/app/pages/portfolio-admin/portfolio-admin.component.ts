@@ -840,10 +840,10 @@ export class PortfolioAdminComponent implements OnInit {
     this.portfolioService.toggleVisibility(image.id, newVisibility).subscribe({
       next: () => {
         // Update local state
-        const images = this.portfolioImages().map(img =>
+        const images = this.displayedImages().map(img =>
           img.id === image.id ? { ...img, isVisible: newVisibility } : img
         );
-        this.portfolioImages.set(images);
+        this.displayedImages.set(images);
 
         // Reload stats
         this.loadStats();
