@@ -69,6 +69,9 @@ export interface ClientSelections {
 
   /** Optional notes from client */
   notes?: string;
+
+  /** Delivery confirmation timestamp */
+  deliveredAt?: Date;
 }
 
 /**

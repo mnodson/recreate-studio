@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 import { PersonalGalleryService } from '../../services/personal-gallery.service';
 import { ImageService } from '../../services/image.service';
 import { GithubUploadService } from '../../services/github-upload.service';
@@ -443,13 +444,24 @@ import {
                             </svg>
                             Regenerate Password
                           </button>
+                          @if (gallery.clientSelections?.isSubmitted && !gallery.clientSelections?.deliveredAt) {
+                            <button
+                              class="dropdown-item confirm-delivery"
+                              (click)="confirmDelivery(gallery); closeDropdown()">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                              </svg>
+                              Confirm Delivery
+                            </button>
+                          }
                           @if (gallery.isActive) {
                             <button
                               class="dropdown-item deactivate"
                               (click)="deactivateGallery(gallery.id); closeDropdown()">
                               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <circle cx="12" cy="12" r="10"></circle>
-                                <line x1="15" y1="9" x2="9" y2="15"></line>
+                                <line x1="15" y1="9" x2="9" x2="15" y2="15"></line>
                                 <line x1="9" y1="9" x2="15" y2="15"></line>
                               </svg>
                               Deactivate
@@ -546,10 +558,10 @@ import {
                       <div class="banner-content">
                         <strong>Client Selections Received</strong>
                         <div class="selection-details">
-                          <span>{{ (gallery.clientSelections.cart?.length || 0) }} images for delivery</span>
-                          <span>{{ (gallery.clientSelections.favorites?.length || 0) }} favorites</span>
+                          <span>{{ (gallery.clientSelections.cart.length || 0) }} images for delivery</span>
+                          <span>{{ (gallery.clientSelections.favorites.length || 0) }} favorites</span>
                         </div>
-                        <p class="submitted-date">Submitted {{ gallery.clientSelections?.submittedAt | date:'MMM d, y h:mm a' }}</p>
+                        <p class="submitted-date">Submitted {{ gallery.clientSelections.submittedAt | date:'MMM d, y h:mm a' }}</p>
                       </div>
                       <div class="banner-actions">
                         <button
@@ -565,6 +577,63 @@ import {
                       </div>
                     </div>
                   }
+
+                  <!-- Gallery Timeline -->
+                  <div class="gallery-timeline">
+                    <div class="timeline-item completed">
+                      <div class="timeline-marker">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                      </div>
+                      <div class="timeline-content">
+                        <div class="timeline-label">Ready for Viewing</div>
+                        <div class="timeline-date">{{ gallery.createdAt | date:'MMM d, y' }}</div>
+                      </div>
+                    </div>
+
+                    <div class="timeline-item" [class.completed]="gallery.lastAccessedAt">
+                      <div class="timeline-marker">
+                        @if (gallery.lastAccessedAt) {
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                          </svg>
+                        }
+                      </div>
+                      <div class="timeline-content">
+                        <div class="timeline-label">Viewed</div>
+                        <div class="timeline-date">{{ gallery.lastAccessedAt ? (gallery.lastAccessedAt | date:'MMM d, y') : 'Not yet' }}</div>
+                      </div>
+                    </div>
+
+                    <div class="timeline-item" [class.completed]="gallery.clientSelections?.isSubmitted">
+                      <div class="timeline-marker">
+                        @if (gallery.clientSelections?.isSubmitted) {
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                          </svg>
+                        }
+                      </div>
+                      <div class="timeline-content">
+                        <div class="timeline-label">Selections Received</div>
+                        <div class="timeline-date">{{ gallery.clientSelections?.submittedAt ? (gallery.clientSelections?.submittedAt | date:'MMM d, y') : 'Not yet' }}</div>
+                      </div>
+                    </div>
+
+                    <div class="timeline-item" [class.completed]="gallery.clientSelections?.deliveredAt">
+                      <div class="timeline-marker">
+                        @if (gallery.clientSelections?.deliveredAt) {
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                          </svg>
+                        }
+                      </div>
+                      <div class="timeline-content">
+                        <div class="timeline-label">Delivered</div>
+                        <div class="timeline-date">{{ gallery.clientSelections?.deliveredAt ? (gallery.clientSelections?.deliveredAt | date:'MMM d, y') : 'Not yet' }}</div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 <div class="gallery-card-footer">
@@ -1355,6 +1424,37 @@ export class GalleryAdminComponent implements OnInit, OnDestroy {
   closeSelectionsModal() {
     this.showSelectionsModal.set(false);
     this.selectedGalleryForModal.set(null);
+  }
+
+  async confirmDelivery(gallery: PersonalGallery) {
+    try {
+      if (!gallery.clientSelections) {
+        return;
+      }
+
+      // Update the gallery with delivery timestamp
+      const updates: Partial<PersonalGallery> = {
+        clientSelections: {
+          ...gallery.clientSelections,
+          deliveredAt: new Date()
+        }
+      };
+
+      await firstValueFrom(this.galleryService.updateGallery(gallery.id, updates));
+
+      // Update local state
+      const updatedGalleries = this.galleries().map(g =>
+        g.id === gallery.id
+          ? { ...g, clientSelections: { ...g.clientSelections!, deliveredAt: new Date() } }
+          : g
+      );
+      this.galleries.set(updatedGalleries);
+
+      this.showToastMessage('Delivery confirmed successfully!');
+    } catch (error: any) {
+      console.error('Error confirming delivery:', error);
+      this.showToastMessage('Failed to confirm delivery: ' + error.message);
+    }
   }
 
   getFileName(imagePath: string): string {

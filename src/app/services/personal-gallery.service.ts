@@ -534,7 +534,8 @@ export class PersonalGalleryService {
         cart: data['clientSelections'].cart || [],
         isSubmitted: data['clientSelections'].isSubmitted || false,
         submittedAt: data['clientSelections'].submittedAt?.toDate(),
-        notes: data['clientSelections'].notes
+        notes: data['clientSelections'].notes,
+        deliveredAt: data['clientSelections'].deliveredAt?.toDate()
       } : undefined
     };
   }
