@@ -525,7 +525,46 @@ import {
                         <span>Password protected</span>
                       </div>
                     }
+                    @if (gallery.clientSelections?.isSubmitted) {
+                      <div class="meta-item selections-submitted">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2">
+                          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                        </svg>
+                        <span>{{ (gallery.clientSelections?.cart?.length || 0) }} selected</span>
+                      </div>
+                    }
                   </div>
+
+                  @if (gallery.clientSelections?.isSubmitted && gallery.clientSelections) {
+                    <div class="client-selections-banner">
+                      <div class="banner-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                        </svg>
+                      </div>
+                      <div class="banner-content">
+                        <strong>Client Selections Received</strong>
+                        <div class="selection-details">
+                          <span>{{ (gallery.clientSelections.cart?.length || 0) }} images for delivery</span>
+                          <span>{{ (gallery.clientSelections.favorites?.length || 0) }} favorites</span>
+                        </div>
+                        <p class="submitted-date">Submitted {{ gallery.clientSelections?.submittedAt | date:'MMM d, y h:mm a' }}</p>
+                      </div>
+                      <div class="banner-actions">
+                        <button
+                          type="button"
+                          class="btn-view-selections"
+                          (click)="openSelectionsModal(gallery); $event.stopPropagation()">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                          </svg>
+                          View Details
+                        </button>
+                      </div>
+                    </div>
+                  }
                 </div>
 
                 <div class="gallery-card-footer">
@@ -562,6 +601,99 @@ import {
         }
       </section>
 
+      <!-- Client Selections Modal -->
+      @if (showSelectionsModal() && selectedGalleryForModal()) {
+        <section class="selections-modal-overlay" (click)="closeSelectionsModal()">
+          <div class="selections-modal" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+              <div class="header-info">
+                <h3>Client Selections</h3>
+                <p class="gallery-title">{{ selectedGalleryForModal()!.title }} - {{ selectedGalleryForModal()!.clientName }}</p>
+              </div>
+              <button type="button" class="btn-close" (click)="closeSelectionsModal()">×</button>
+            </div>
+            <div class="modal-body">
+              <!-- Cart/Delivery Items -->
+              @if (selectedGalleryForModal()!.clientSelections?.cart && selectedGalleryForModal()!.clientSelections!.cart.length > 0) {
+                <div class="selections-section">
+                  <h4>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="9" cy="21" r="1"></circle>
+                      <circle cx="20" cy="21" r="1"></circle>
+                      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                    </svg>
+                    For Delivery ({{ selectedGalleryForModal()!.clientSelections!.cart.length }})
+                  </h4>
+                  <div class="selections-grid">
+                    @for (imagePath of selectedGalleryForModal()!.clientSelections!.cart; track imagePath) {
+                      <div class="selection-item">
+                        <div class="selection-thumbnail">
+                          <img
+                            [src]="getImageUrl(imagePath)"
+                            [alt]="getFileName(imagePath)"
+                            loading="lazy"
+                            decoding="async">
+                        </div>
+                        <div class="selection-info">
+                          <span class="filename">{{ getFileName(imagePath) }}</span>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+
+              <!-- Favorites -->
+              @if (selectedGalleryForModal()!.clientSelections?.favorites && selectedGalleryForModal()!.clientSelections!.favorites.length > 0) {
+                <div class="selections-section">
+                  <h4>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2">
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                    </svg>
+                    Favorites ({{ selectedGalleryForModal()!.clientSelections!.favorites.length }})
+                  </h4>
+                  <div class="selections-grid">
+                    @for (imagePath of selectedGalleryForModal()!.clientSelections!.favorites; track imagePath) {
+                      <div class="selection-item">
+                        <div class="selection-thumbnail">
+                          <img
+                            [src]="getImageUrl(imagePath)"
+                            [alt]="getFileName(imagePath)"
+                            loading="lazy"
+                            decoding="async">
+                        </div>
+                        <div class="selection-info">
+                          <span class="filename">{{ getFileName(imagePath) }}</span>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+
+              <!-- Client Notes -->
+              @if (selectedGalleryForModal()!.clientSelections?.notes) {
+                <div class="selections-section">
+                  <h4>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                      <polyline points="14 2 14 8 20 8"></polyline>
+                      <line x1="16" y1="13" x2="8" y2="13"></line>
+                      <line x1="16" y1="17" x2="8" y2="17"></line>
+                      <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
+                    Client Notes
+                  </h4>
+                  <div class="client-notes-display">
+                    {{ selectedGalleryForModal()!.clientSelections!.notes }}
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        </section>
+      }
+
       <!-- Toast Notification -->
       @if (showToast()) {
         <div class="toast-notification">
@@ -590,6 +722,10 @@ export class GalleryAdminComponent implements OnInit, OnDestroy {
   unreadMessageCount = signal(0);
   regeneratedPassword = signal('');
   regeneratedPasswordGalleryTitle = signal('');
+
+  // Client selections modal state
+  showSelectionsModal = signal(false);
+  selectedGalleryForModal = signal<PersonalGallery | null>(null);
 
   // File upload state
   selectedFiles = signal<File[]>([]);
@@ -1209,5 +1345,25 @@ export class GalleryAdminComponent implements OnInit, OnDestroy {
 
   closeDropdown() {
     this.openDropdownId.set(null);
+  }
+
+  openSelectionsModal(gallery: PersonalGallery) {
+    this.selectedGalleryForModal.set(gallery);
+    this.showSelectionsModal.set(true);
+  }
+
+  closeSelectionsModal() {
+    this.showSelectionsModal.set(false);
+    this.selectedGalleryForModal.set(null);
+  }
+
+  getFileName(imagePath: string): string {
+    // Extract filename from path like 'gallery/ClientName/image001.webp'
+    const parts = imagePath.split('/');
+    return parts[parts.length - 1];
+  }
+
+  getImageUrl(imagePath: string): string {
+    return this.imageService.getImageUrl(imagePath);
   }
 }

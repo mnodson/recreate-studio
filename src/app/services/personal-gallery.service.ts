@@ -337,6 +337,51 @@ export class PersonalGalleryService {
     }
   }
 
+  /**
+   * Updates client selections for a gallery
+   */
+  updateClientSelections(
+    galleryId: string,
+    favorites: string[],
+    cart: string[],
+    isSubmitted: boolean = false,
+    notes?: string
+  ): Observable<void> {
+    return from(this.updateClientSelectionsAsync(galleryId, favorites, cart, isSubmitted, notes));
+  }
+
+  private async updateClientSelectionsAsync(
+    galleryId: string,
+    favorites: string[],
+    cart: string[],
+    isSubmitted: boolean,
+    notes?: string
+  ): Promise<void> {
+    try {
+      const docRef = doc(this.firestore, this.COLLECTION_NAME, galleryId);
+      const clientSelections: any = {
+        favorites,
+        cart,
+        isSubmitted
+      };
+
+      if (isSubmitted) {
+        clientSelections.submittedAt = Timestamp.now();
+      }
+
+      if (notes !== undefined) {
+        clientSelections.notes = notes;
+      }
+
+      await updateDoc(docRef, {
+        clientSelections
+      });
+    } catch (error) {
+      console.error('Error updating client selections:', error);
+      throw error;
+    }
+  }
+
   // ============================================================================
   // Private Helper Methods
   // ============================================================================
@@ -444,6 +489,9 @@ export class PersonalGalleryService {
     if (data.metadata?.shootDate instanceof Date) {
       data.metadata.shootDate = Timestamp.fromDate(data.metadata.shootDate);
     }
+    if (data.clientSelections?.submittedAt instanceof Date) {
+      data.clientSelections.submittedAt = Timestamp.fromDate(data.clientSelections.submittedAt);
+    }
 
     // Remove undefined fields
     Object.keys(data).forEach(key => {
@@ -480,6 +528,13 @@ export class PersonalGalleryService {
         shootDate: data['metadata'].shootDate?.toDate(),
         location: data['metadata'].location,
         notes: data['metadata'].notes
+      } : undefined,
+      clientSelections: data['clientSelections'] ? {
+        favorites: data['clientSelections'].favorites || [],
+        cart: data['clientSelections'].cart || [],
+        isSubmitted: data['clientSelections'].isSubmitted || false,
+        submittedAt: data['clientSelections'].submittedAt?.toDate(),
+        notes: data['clientSelections'].notes
       } : undefined
     };
   }

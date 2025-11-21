@@ -46,6 +46,29 @@ export interface PersonalGallery {
 
   /** Optional metadata */
   metadata?: GalleryMetadata;
+
+  /** Client selections (favorites and cart) */
+  clientSelections?: ClientSelections;
+}
+
+/**
+ * Client selections for a gallery
+ */
+export interface ClientSelections {
+  /** Array of image URLs marked as favorites */
+  favorites: string[];
+
+  /** Array of image URLs added to cart */
+  cart: string[];
+
+  /** Whether selections have been submitted */
+  isSubmitted: boolean;
+
+  /** Submission timestamp */
+  submittedAt?: Date;
+
+  /** Optional notes from client */
+  notes?: string;
 }
 
 /**

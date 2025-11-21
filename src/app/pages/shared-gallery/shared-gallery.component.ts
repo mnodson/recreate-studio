@@ -103,6 +103,8 @@ import { PersonalGallery } from '../../models/gallery.model';
                 <div
                   class="masonry-item"
                   [class.loaded]="isImageLoaded(i)"
+                  [class.is-favorite]="isFavorite(imageUrl)"
+                  [class.in-cart]="isInCart(imageUrl)"
                   (click)="openLightbox(i, $event)">
                   <img
                     [src]="getImageSrc(i, imageUrl)"
@@ -111,6 +113,33 @@ import { PersonalGallery } from '../../models/gallery.model';
                     decoding="async"
                     (load)="onImageLoad(i)"
                     (error)="onImageError($event, imageUrl)">
+                  <div class="image-actions">
+                    <button
+                      class="action-btn favorite-btn"
+                      [class.active]="isFavorite(imageUrl)"
+                      (click)="toggleFavorite(imageUrl, $event)"
+                      title="Add to favorites">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" [attr.fill]="isFavorite(imageUrl) ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                      </svg>
+                    </button>
+                    <button
+                      class="action-btn cart-btn"
+                      [class.active]="isInCart(imageUrl)"
+                      (click)="toggleCart(imageUrl, $event)"
+                      [title]="isInCart(imageUrl) ? 'Remove from cart' : 'Add to cart'">
+                      @if (isInCart(imageUrl)) {
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                      } @else {
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <line x1="12" y1="5" x2="12" y2="19"></line>
+                          <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                      }
+                    </button>
+                  </div>
                   <div class="image-overlay">
                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
                       <circle cx="11" cy="11" r="8"></circle>
@@ -133,34 +162,253 @@ import { PersonalGallery } from '../../models/gallery.model';
                   <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
               </button>
-              @if (currentImageIndex() > 0) {
-                <button class="lightbox-prev" (click)="previousImage($event)">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                    <polyline points="15 18 9 12 15 6"></polyline>
-                  </svg>
-                </button>
-              }
-              @if (currentImageIndex() < gallery()!.imageUrls.length - 1) {
-                <button class="lightbox-next" (click)="nextImage($event)">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                    <polyline points="9 18 15 12 9 6"></polyline>
-                  </svg>
-                </button>
-              }
-              <img
-                [src]="imageService.getImageUrl(gallery()!.imageUrls[currentImageIndex()])"
-                [alt]="gallery()!.title"
-                class="lightbox-image"
-                (click)="$event.stopPropagation()">
-              <div class="lightbox-counter">
-                {{ currentImageIndex() + 1 }} / {{ gallery()!.imageUrls.length }}
+
+              <div class="lightbox-content" (click)="$event.stopPropagation()">
+                <!-- Image Section -->
+                <div class="lightbox-image-section">
+                  @if (currentImageIndex() > 0) {
+                    <button class="lightbox-prev" (click)="previousImage($event)">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                      </svg>
+                    </button>
+                  }
+                  @if (currentImageIndex() < gallery()!.imageUrls.length - 1) {
+                    <button class="lightbox-next" (click)="nextImage($event)">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                      </svg>
+                    </button>
+                  }
+                  <img
+                    [src]="imageService.getImageUrl(gallery()!.imageUrls[currentImageIndex()])"
+                    [alt]="gallery()!.title"
+                    class="lightbox-image">
+                </div>
+
+                <!-- Side Panel -->
+                <div class="lightbox-sidebar">
+                  <!-- Gallery Info -->
+                  <div class="sidebar-header">
+                    <div class="gallery-info">
+                      <h3>{{ gallery()!.title }}</h3>
+                      <p class="client-name">{{ gallery()!.clientName }}</p>
+                    </div>
+                  </div>
+
+                  <!-- Image Counter -->
+                  <div class="sidebar-counter">
+                    <span class="counter-text">{{ currentImageIndex() + 1 }} / {{ gallery()!.imageUrls.length }}</span>
+                  </div>
+
+                  <!-- Actions -->
+                  <div class="sidebar-actions">
+                    <button
+                      class="action-btn-large favorite-btn"
+                      [class.active]="isFavorite(gallery()!.imageUrls[currentImageIndex()])"
+                      (click)="toggleFavorite(gallery()!.imageUrls[currentImageIndex()])">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" [attr.fill]="isFavorite(gallery()!.imageUrls[currentImageIndex()]) ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                      </svg>
+                      <span>{{ isFavorite(gallery()!.imageUrls[currentImageIndex()]) ? 'Favorited' : 'Add to Favorites' }}</span>
+                    </button>
+                    <button
+                      class="action-btn-large cart-btn"
+                      [class.active]="isInCart(gallery()!.imageUrls[currentImageIndex()])"
+                      (click)="toggleCart(gallery()!.imageUrls[currentImageIndex()])">
+                      @if (isInCart(gallery()!.imageUrls[currentImageIndex()])) {
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <span>Selected for Delivery</span>
+                      } @else {
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <circle cx="9" cy="21" r="1"></circle>
+                          <circle cx="20" cy="21" r="1"></circle>
+                          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                        </svg>
+                        <span>Add to Cart</span>
+                      }
+                    </button>
+                  </div>
+
+                  <!-- Info Section -->
+                  <div class="sidebar-info">
+                    <p class="info-text">Use the arrows to navigate through images</p>
+                    @if (cart().size > 0 || favorites().size > 0) {
+                      <div class="selection-summary">
+                        @if (cart().size > 0) {
+                          <div class="summary-section">
+                            <div class="summary-header">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                              </svg>
+                              <span>{{ cart().size }} selected for delivery</span>
+                            </div>
+                            <div class="selection-thumbnails">
+                              @for (imageUrl of Array.from(cart()); track imageUrl) {
+                                <div class="thumbnail-item">
+                                  <img [src]="imageService.getImageUrl(imageUrl)" [alt]="'Selected image'">
+                                </div>
+                              }
+                            </div>
+                          </div>
+                        }
+                        @if (favorites().size > 0) {
+                          <div class="summary-section">
+                            <div class="summary-header">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2">
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                              </svg>
+                              <span>{{ favorites().size }} favorites</span>
+                            </div>
+                            <div class="selection-thumbnails">
+                              @for (imageUrl of Array.from(favorites()); track imageUrl) {
+                                <div class="thumbnail-item">
+                                  <img [src]="imageService.getImageUrl(imageUrl)" [alt]="'Favorite image'">
+                                </div>
+                              }
+                            </div>
+                          </div>
+                        }
+                      </div>
+                    }
+                  </div>
+                </div>
               </div>
             </div>
+          }
+
+          <!-- Floating Cart Button -->
+          @if (cart().size > 0 || favorites().size > 0) {
+            <button class="floating-cart-btn" (click)="openCartModal()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="9" cy="21" r="1"></circle>
+                <circle cx="20" cy="21" r="1"></circle>
+                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+              </svg>
+              <span class="cart-badge">{{ cart().size }}</span>
+              <span class="cart-label">Review & Submit</span>
+            </button>
           }
 
           <footer class="gallery-footer">
             <img src="images/Logo_Transparent.png" alt="RecreateStudio - Professional Photography" class="hero-logo-image">
           </footer>
+        </div>
+      }
+
+      <!-- Cart Modal -->
+      @if (showCartModal()) {
+        <div class="cart-modal-overlay" (click)="closeCartModal()">
+          <div class="cart-modal" (click)="$event.stopPropagation()">
+            <div class="cart-modal-header">
+              <h2>Your Selections</h2>
+              <button class="close-btn" (click)="closeCartModal()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+
+            <div class="cart-modal-body">
+              <!-- Summary Stats -->
+              <div class="selection-stats">
+                <div class="stat-item">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                  </svg>
+                  <span>{{ favorites().size }} favorites</span>
+                </div>
+                <div class="stat-item">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                  <span>{{ cart().size }} selected for delivery</span>
+                </div>
+              </div>
+
+              <!-- Cart Images Grid -->
+              <div class="cart-section">
+                <h3>Selected for Delivery ({{ cart().size }})</h3>
+                @if (cart().size > 0) {
+                  <div class="cart-images-grid">
+                    @for (imageUrl of Array.from(cart()); track imageUrl) {
+                      <div class="cart-image-item">
+                        <img [src]="imageService.getImageUrl(imageUrl)" [alt]="'Selected image'">
+                        <button class="remove-from-cart-btn" (click)="toggleCart(imageUrl)" title="Remove from cart">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                          </svg>
+                        </button>
+                      </div>
+                    }
+                  </div>
+                } @else {
+                  <p class="empty-message">No images selected yet. Click the + button on images to add them to your cart.</p>
+                }
+              </div>
+
+              <!-- Favorites Images Grid -->
+              @if (favorites().size > 0) {
+                <div class="cart-section">
+                  <h3>Favorites ({{ favorites().size }})</h3>
+                  <div class="cart-images-grid">
+                    @for (imageUrl of Array.from(favorites()); track imageUrl) {
+                      <div class="cart-image-item">
+                        <img [src]="imageService.getImageUrl(imageUrl)" [alt]="'Favorite image'">
+                        <button class="remove-from-cart-btn" (click)="toggleFavorite(imageUrl)" title="Remove from favorites">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                          </svg>
+                        </button>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+
+              <!-- Notes -->
+              <div class="cart-section">
+                <label for="clientNotes">Optional Notes for Laura</label>
+                <textarea
+                  id="clientNotes"
+                  [(ngModel)]="clientNotes"
+                  placeholder="Any special requests or notes about your selections..."
+                  rows="3"></textarea>
+              </div>
+
+              @if (gallery()?.clientSelections?.isSubmitted) {
+                <div class="submitted-notice">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                  </svg>
+                  <div>
+                    <strong>Selections submitted!</strong>
+                    <p>You can still make changes. Just click "Submit Selections" again when you're ready.</p>
+                  </div>
+                </div>
+              }
+            </div>
+
+            <div class="cart-modal-footer">
+              <button class="btn-secondary" (click)="closeCartModal()">Continue Browsing</button>
+              <button
+                class="btn-primary"
+                (click)="submitSelections()"
+                [disabled]="submitting() || cart().size === 0">
+                @if (submitting()) {
+                  <span>Submitting...</span>
+                } @else {
+                  <span>{{ gallery()?.clientSelections?.isSubmitted ? 'Update' : 'Submit' }} Selections</span>
+                }
+              </button>
+            </div>
+          </div>
         </div>
       }
 
@@ -179,6 +427,35 @@ import { PersonalGallery } from '../../models/gallery.model';
           </div>
         </div>
       }
+
+      <!-- Toast Notification -->
+      @if (showToast()) {
+        <div class="toast-notification" [class.toast-success]="toastType() === 'success'" [class.toast-error]="toastType() === 'error'" [class.toast-info]="toastType() === 'info'">
+          <div class="toast-content">
+            @if (toastType() === 'success') {
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+            }
+            @if (toastType() === 'error') {
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+            }
+            @if (toastType() === 'info') {
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="12" x2="12" y2="16"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+            }
+            <span>{{ toastMessage() }}</span>
+          </div>
+        </div>
+      }
     </div>
   `,
   styleUrls: ['./shared-gallery.component.scss']
@@ -191,6 +468,18 @@ export class SharedGalleryComponent implements OnInit, OnDestroy {
   currentImageIndex = signal(0);
   password = '';
   passwordError = signal('');
+
+  // Client selections state
+  favorites = signal<Set<string>>(new Set());
+  cart = signal<Set<string>>(new Set());
+  showCartModal = signal(false);
+  submitting = signal(false);
+  clientNotes = '';
+
+  // Toast notification state
+  showToast = signal(false);
+  toastMessage = signal('');
+  toastType = signal<'success' | 'error' | 'info'>('success');
 
   // Thumbnail state
   thumbnails = signal<string[]>([]);
@@ -215,6 +504,9 @@ export class SharedGalleryComponent implements OnInit, OnDestroy {
 
   // Gallery images (all images for masonry grid)
   galleryImagesForMasonry = signal<string[]>([]);
+
+  // Expose Array for template use
+  Array = Array;
 
   constructor(
     private route: ActivatedRoute,
@@ -262,6 +554,12 @@ export class SharedGalleryComponent implements OnInit, OnDestroy {
             gallery.title,
             gallery.imageUrls.length
           );
+
+          // Load existing selections if any
+          if (gallery.clientSelections) {
+            this.favorites.set(new Set(gallery.clientSelections.favorites));
+            this.cart.set(new Set(gallery.clientSelections.cart));
+          }
 
           // Find first landscape image for hero and set up gallery images
           this.setupGalleryImages();
@@ -518,5 +816,138 @@ export class SharedGalleryComponent implements OnInit, OnDestroy {
       console.error('Original image also failed to load:', originalUrl);
       this.analytics.trackImageError(relativeUrl, 'image_load_failed');
     }
+  }
+
+  // Client selection methods
+  toggleFavorite(imageUrl: string, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+
+    const currentFavorites = new Set(this.favorites());
+    if (currentFavorites.has(imageUrl)) {
+      currentFavorites.delete(imageUrl);
+    } else {
+      currentFavorites.add(imageUrl);
+    }
+    this.favorites.set(currentFavorites);
+
+    // Auto-save selections
+    this.saveSelections();
+  }
+
+  toggleCart(imageUrl: string, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+
+    const currentCart = new Set(this.cart());
+    if (currentCart.has(imageUrl)) {
+      currentCart.delete(imageUrl);
+    } else {
+      currentCart.add(imageUrl);
+    }
+    this.cart.set(currentCart);
+
+    // Auto-save selections
+    this.saveSelections();
+  }
+
+  isFavorite(imageUrl: string): boolean {
+    return this.favorites().has(imageUrl);
+  }
+
+  isInCart(imageUrl: string): boolean {
+    return this.cart().has(imageUrl);
+  }
+
+  private saveSelections(): void {
+    const gallery = this.gallery();
+    if (!gallery || !gallery.id) return;
+
+    this.galleryService.updateClientSelections(
+      gallery.id,
+      Array.from(this.favorites()),
+      Array.from(this.cart()),
+      false
+    ).subscribe({
+      next: () => {
+        console.log('Selections saved');
+      },
+      error: (error) => {
+        console.error('Error saving selections:', error);
+      }
+    });
+  }
+
+  openCartModal(): void {
+    this.showCartModal.set(true);
+    document.body.style.overflow = 'hidden';
+  }
+
+  closeCartModal(): void {
+    this.showCartModal.set(false);
+    document.body.style.overflow = '';
+  }
+
+  submitSelections(): void {
+    const gallery = this.gallery();
+    if (!gallery || !gallery.id) return;
+
+    if (this.cart().size === 0) {
+      this.showToastMessage('Please add at least one image to your cart before submitting.', 'error');
+      return;
+    }
+
+    this.submitting.set(true);
+
+    this.galleryService.updateClientSelections(
+      gallery.id,
+      Array.from(this.favorites()),
+      Array.from(this.cart()),
+      true,
+      this.clientNotes
+    ).subscribe({
+      next: () => {
+        this.submitting.set(false);
+        this.showToastMessage('Your selections have been submitted successfully!', 'success');
+        this.analytics.trackCustomEvent('gallery_selections_submitted', {
+          galleryId: gallery.id,
+          favoritesCount: this.favorites().size,
+          cartCount: this.cart().size
+        });
+
+        // Update local gallery data
+        const updatedGallery = { ...gallery };
+        if (!updatedGallery.clientSelections) {
+          updatedGallery.clientSelections = {
+            favorites: [],
+            cart: [],
+            isSubmitted: false
+          };
+        }
+        updatedGallery.clientSelections.isSubmitted = true;
+        updatedGallery.clientSelections.submittedAt = new Date();
+        this.gallery.set(updatedGallery);
+
+        this.closeCartModal();
+      },
+      error: (error) => {
+        console.error('Error submitting selections:', error);
+        this.submitting.set(false);
+        this.showToastMessage('Failed to submit selections. Please try again.', 'error');
+      }
+    });
+  }
+
+  showToastMessage(message: string, type: 'success' | 'error' | 'info' = 'success'): void {
+    this.toastMessage.set(message);
+    this.toastType.set(type);
+    this.showToast.set(true);
+
+    // Auto-hide after 4 seconds
+    setTimeout(() => {
+      this.showToast.set(false);
+    }, 4000);
   }
 }
