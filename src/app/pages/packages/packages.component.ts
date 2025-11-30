@@ -1,7 +1,9 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AnalyticsService } from '../../services/analytics.service';
+import { PromotionService } from '../../services/promotion.service';
+import { Promotion, PackageWithPromotion } from '../../models/promotion.model';
 
 interface Package {
   id: number;
@@ -59,7 +61,21 @@ interface SpecialtySection {
                   <div class="summary-main">
                     <div class="package-category">{{ package.category }}</div>
                     <h3 class="package-name">{{ package.name }}</h3>
-                    <div class="package-price">{{ package.price }}</div>
+                    <div class="package-pricing">
+                      @if (getPackagePromotion(package.id)?.hasPromotion) {
+                        <div class="promotional-pricing">
+                          <span class="promo-badge">
+                            {{ getPackagePromotion(package.id)?.discountPercentage }}% OFF
+                          </span>
+                          <div class="price-display">
+                            <span class="original-price">{{ formatOriginalPrice(package.id) }}</span>
+                            <span class="promo-price">{{ formatPromoPrice(package.id) }}</span>
+                          </div>
+                        </div>
+                      } @else {
+                        <div class="package-price">{{ package.price }}</div>
+                      }
+                    </div>
                     <div class="package-duration">{{ package.duration }}</div>
                   </div>
                   <button class="expand-btn" type="button">
@@ -170,14 +186,61 @@ interface SpecialtySection {
 })
 export class PackagesComponent implements OnInit {
   expandedPackages = signal<Set<number>>(new Set());
+  activePromotions = signal<Promotion[]>([]);
+  packagePromotions = signal<Map<number, PackageWithPromotion>>(new Map());
 
-  constructor(
-    private analytics: AnalyticsService,
-    private router: Router
-  ) {}
+  private analytics = inject(AnalyticsService);
+  private router = inject(Router);
+  private promotionService = inject(PromotionService);
 
   ngOnInit() {
     this.analytics.trackPageView('packages');
+    this.loadPromotions();
+  }
+
+  loadPromotions() {
+    this.promotionService.getActivePromotions().subscribe((promotions) => {
+      this.activePromotions.set(promotions);
+      this.calculatePackagePromotions();
+    });
+  }
+
+  calculatePackagePromotions() {
+    const promotionsMap = new Map<number, PackageWithPromotion>();
+
+    this.packages.forEach((pkg) => {
+      const basePrice = this.extractNumericPrice(pkg.price);
+      if (basePrice > 0) {
+        const promoData = this.promotionService.calculatePromotionalPrice(
+          pkg.id,
+          basePrice,
+          this.activePromotions()
+        );
+        promotionsMap.set(pkg.id, promoData);
+      }
+    });
+
+    this.packagePromotions.set(promotionsMap);
+  }
+
+  extractNumericPrice(priceString: string): number {
+    // Extract first number from price string (e.g., "$495" => 495, "$600 /2hr" => 600, "from $695" => 695)
+    const match = priceString.match(/\d+/);
+    return match ? parseInt(match[0], 10) : 0;
+  }
+
+  getPackagePromotion(packageId: number): PackageWithPromotion | undefined {
+    return this.packagePromotions().get(packageId);
+  }
+
+  formatOriginalPrice(packageId: number): string {
+    const promo = this.getPackagePromotion(packageId);
+    return promo ? `$${promo.originalPrice}` : '';
+  }
+
+  formatPromoPrice(packageId: number): string {
+    const promo = this.getPackagePromotion(packageId);
+    return promo ? `$${promo.promotionalPrice}` : '';
   }
 
   togglePackage(packageId: number) {

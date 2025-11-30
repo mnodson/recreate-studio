@@ -1,0 +1,328 @@
+<div class="promotion-admin-container">
+  <header class="admin-header">
+    <div class="header-content">
+      <h1>Promotion Management</h1>
+      <p>Create and manage promotional campaigns for your packages</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn-nav" (click)="navigateToGalleryAdmin()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+          <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+        Galleries
+      </button>
+      <button class="btn-nav" (click)="navigateToPortfolioAdmin()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+          <circle cx="8.5" cy="8.5" r="1.5"></circle>
+          <polyline points="21 15 16 10 5 21"></polyline>
+        </svg>
+        Portfolio
+      </button>
+      <button class="btn-nav" (click)="navigateToMessageCenter()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+          <polyline points="22,6 12,13 2,6"></polyline>
+        </svg>
+        Messages
+      </button>
+    </div>
+  </header>
+
+  <!-- Messages -->
+  @if (errorMessage()) {
+    <div class="message error-message">
+      <span>{{ errorMessage() }}</span>
+      <button (click)="clearMessages()" class="close-btn">✕</button>
+    </div>
+  }
+
+  @if (successMessage()) {
+    <div class="message success-message">
+      <span>{{ successMessage() }}</span>
+      <button (click)="clearMessages()" class="close-btn">✕</button>
+    </div>
+  }
+
+  <!-- Promotion Form -->
+  <div class="form-section">
+    <h2>{{ editingPromotion() ? 'Edit Promotion' : 'Create New Promotion' }}</h2>
+
+    <form (ngSubmit)="editingPromotion() ? updatePromotion() : createPromotion()" class="promotion-form">
+      <!-- Basic Info -->
+      <div class="form-group">
+        <label for="name">Promotion Name *</label>
+        <input
+          type="text"
+          id="name"
+          [value]="formData().name"
+          (input)="updateFormField('name', $any($event.target).value)"
+          placeholder="e.g., Black Friday 2024"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="description">Description *</label>
+        <textarea
+          id="description"
+          [value]="formData().description"
+          (input)="updateFormField('description', $any($event.target).value)"
+          placeholder="Describe this promotion"
+          rows="3"
+          required
+        ></textarea>
+      </div>
+
+      <!-- Discount Settings -->
+      <div class="form-row">
+        <div class="form-group">
+          <label for="discountType">Discount Type *</label>
+          <select
+            id="discountType"
+            [value]="formData().discountType"
+            (change)="updateFormField('discountType', $any($event.target).value)"
+          >
+            <option value="percentage">Percentage (%)</option>
+            <option value="fixed">Fixed Amount ($)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="discountValue">Discount Value *</label>
+          <input
+            type="number"
+            id="discountValue"
+            [value]="formData().discountValue"
+            (input)="updateFormField('discountValue', +$any($event.target).value)"
+            [placeholder]="formData().discountType === 'percentage' ? 'e.g., 20' : 'e.g., 50'"
+            min="0"
+            [max]="formData().discountType === 'percentage' ? 100 : undefined"
+            required
+          />
+          <small>{{ formData().discountType === 'percentage' ? 'Enter percentage (0-100)' : 'Enter dollar amount' }}</small>
+        </div>
+      </div>
+
+      <!-- Date Range -->
+      <div class="form-row">
+        <div class="form-group">
+          <label for="startDate">Start Date *</label>
+          <input
+            type="date"
+            id="startDate"
+            [value]="formData().startDate"
+            (input)="updateFormField('startDate', $any($event.target).value)"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="endDate">End Date *</label>
+          <input
+            type="date"
+            id="endDate"
+            [value]="formData().endDate"
+            (input)="updateFormField('endDate', $any($event.target).value)"
+            required
+          />
+        </div>
+      </div>
+
+      <!-- Scope -->
+      <div class="form-group">
+        <label class="checkbox-label">
+          <input
+            type="checkbox"
+            [checked]="formData().isSiteWide"
+            (change)="updateFormField('isSiteWide', $any($event.target).checked)"
+          />
+          <span>Apply to all packages (site-wide)</span>
+        </label>
+      </div>
+
+      @if (!formData().isSiteWide) {
+        <div class="form-group">
+          <label>Target Packages *</label>
+          <div class="package-selection">
+            @for (pkg of availablePackages; track pkg.id) {
+              <label class="checkbox-label package-checkbox">
+                <input
+                  type="checkbox"
+                  [checked]="isPackageSelected(pkg.id)"
+                  (change)="togglePackageSelection(pkg.id)"
+                />
+                <span>{{ pkg.name }}</span>
+              </label>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Banner Settings -->
+      <div class="form-group">
+        <label class="checkbox-label">
+          <input
+            type="checkbox"
+            [checked]="formData().showBanner"
+            (change)="updateFormField('showBanner', $any($event.target).checked)"
+          />
+          <span>Show promotional banner</span>
+        </label>
+      </div>
+
+      @if (formData().showBanner) {
+        <div class="banner-settings">
+          <div class="form-group">
+            <label for="bannerText">Banner Text *</label>
+            <input
+              type="text"
+              id="bannerText"
+              [value]="formData().bannerText"
+              (input)="updateFormField('bannerText', $any($event.target).value)"
+              placeholder="e.g., 🎉 Black Friday Sale! Save 20% on all packages - Limited Time!"
+              required
+            />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="bannerBackgroundColor">Background Color</label>
+              <input
+                type="color"
+                id="bannerBackgroundColor"
+                [value]="formData().bannerBackgroundColor"
+                (input)="updateFormField('bannerBackgroundColor', $any($event.target).value)"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="bannerTextColor">Text Color</label>
+              <input
+                type="color"
+                id="bannerTextColor"
+                [value]="formData().bannerTextColor"
+                (input)="updateFormField('bannerTextColor', $any($event.target).value)"
+              />
+            </div>
+          </div>
+
+          <!-- Banner Preview -->
+          <div class="banner-preview">
+            <label>Banner Preview:</label>
+            <div
+              class="preview-banner"
+              [style.background]="formData().bannerBackgroundColor"
+              [style.color]="formData().bannerTextColor"
+            >
+              {{ formData().bannerText || 'Your banner text will appear here...' }}
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Active Status -->
+      <div class="form-group">
+        <label class="checkbox-label">
+          <input
+            type="checkbox"
+            [checked]="formData().isActive"
+            (change)="updateFormField('isActive', $any($event.target).checked)"
+          />
+          <span>Promotion is active</span>
+        </label>
+        <small>Inactive promotions won't be displayed even if within date range</small>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="form-actions">
+        @if (editingPromotion()) {
+          <button type="button" (click)="cancelEdit()" class="btn-secondary">Cancel</button>
+          <button type="submit" class="btn-primary" [disabled]="isLoading()">
+            {{ isLoading() ? 'Updating...' : 'Update Promotion' }}
+          </button>
+        } @else {
+          <button type="button" (click)="resetForm()" class="btn-secondary">Clear Form</button>
+          <button type="submit" class="btn-primary" [disabled]="isLoading()">
+            {{ isLoading() ? 'Creating...' : 'Create Promotion' }}
+          </button>
+        }
+      </div>
+    </form>
+  </div>
+
+  <!-- Existing Promotions -->
+  <div class="promotions-list">
+    <h2>Existing Promotions</h2>
+
+    @if (isLoading()) {
+      <div class="loading">Loading promotions...</div>
+    } @else if (promotions().length === 0) {
+      <div class="empty-state">
+        <p>No promotions created yet</p>
+      </div>
+    } @else {
+      <div class="promotions-grid">
+        @for (promo of promotions(); track promo.id) {
+          <div class="promotion-card" [class.active]="isPromotionActive(promo)">
+            <div class="card-header">
+              <div class="card-title">
+                <h3>{{ promo.name }}</h3>
+                @if (isPromotionActive(promo)) {
+                  <span class="status-badge active">Active Now</span>
+                } @else if (!promo.isActive) {
+                  <span class="status-badge inactive">Disabled</span>
+                } @else if (isPromotionScheduled(promo)) {
+                  <span class="status-badge scheduled">Scheduled</span>
+                } @else {
+                  <span class="status-badge expired">Expired</span>
+                }
+              </div>
+              <div class="card-actions">
+                <button (click)="editPromotion(promo)" class="icon-btn" title="Edit">
+                  ✏️
+                </button>
+                <button (click)="deletePromotion(promo.id!)" class="icon-btn delete" title="Delete">
+                  🗑️
+                </button>
+              </div>
+            </div>
+
+            <p class="card-description">{{ promo.description }}</p>
+
+            <div class="card-details">
+              <div class="detail-item">
+                <span class="detail-label">Discount:</span>
+                <span class="detail-value">
+                  {{ promo.discountType === 'percentage' ? promo.discountValue + '%' : '$' + promo.discountValue }}
+                </span>
+              </div>
+
+              <div class="detail-item">
+                <span class="detail-label">Dates:</span>
+                <span class="detail-value">
+                  {{ formatDateForDisplay(promo.startDate) }} - {{ formatDateForDisplay(promo.endDate) }}
+                </span>
+              </div>
+
+              <div class="detail-item">
+                <span class="detail-label">Scope:</span>
+                <span class="detail-value">
+                  {{ promo.isSiteWide ? 'All Packages' : (promo.targetPackageIds?.length || 0) + ' Package(s)' }}
+                </span>
+              </div>
+
+              @if (promo.showBanner) {
+                <div class="detail-item banner-indicator">
+                  <span class="detail-label">Banner:</span>
+                  <span class="detail-value">✓ Enabled</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

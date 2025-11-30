@@ -39,6 +39,11 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'promotion-admin',
+    loadComponent: () => import('./pages/promotion-admin/promotion-admin.component').then(m => m.PromotionAdminComponent),
+    canActivate: [authGuard]
+  },
+  {
     path: 'packages',
     loadComponent: () => import('./pages/packages/packages.component').then(m => m.PackagesComponent)
   },

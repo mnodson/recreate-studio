@@ -1,12 +1,13 @@
 import { Component, signal, inject } from '@angular/core';
 import { RouterOutlet, Router, NavigationStart, NavigationEnd, NavigationCancel, NavigationError } from '@angular/router';
 import { NavigationComponent } from './components/navigation.component';
+import { PromotionalBannerComponent } from './components/promotional-banner.component';
 import { shutterAnimation } from './route-animations';
 import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, NavigationComponent],
+  imports: [RouterOutlet, NavigationComponent, PromotionalBannerComponent],
   templateUrl: './app.html',
   styleUrl: './app.scss',
   animations: [shutterAnimation]

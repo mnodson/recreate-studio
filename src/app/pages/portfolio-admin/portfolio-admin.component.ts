@@ -56,6 +56,13 @@ interface CategoryDisplay {
               <span class="message-badge">{{ unreadMessageCount() }}</span>
             }
           </button>
+          <button class="btn-secondary" (click)="navigateToPromotionAdmin()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+              <line x1="7" y1="7" x2="7.01" y2="7"></line>
+            </svg>
+            Promotions
+          </button>
           <button class="btn-secondary" (click)="logout()">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -1087,6 +1094,10 @@ export class PortfolioAdminComponent implements OnInit {
 
   navigateToMessageCenter(): void {
     this.router.navigate(['/message-center']);
+  }
+
+  navigateToPromotionAdmin(): void {
+    this.router.navigate(['/promotion-admin']);
   }
 
   logout(): void {

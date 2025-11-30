@@ -167,11 +167,56 @@
           margin-bottom: 1rem;
         }
 
+        .package-pricing {
+          margin-bottom: 0.5rem;
+        }
+
         .package-price {
           color: #e6d7ff;
           font-size: 2.2rem;
           font-weight: 400;
-          margin-bottom: 0.5rem;
+        }
+
+        .promotional-pricing {
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+
+          .promo-badge {
+            display: inline-block;
+            align-self: flex-start;
+            background: linear-gradient(135deg, #ff6b6b, #ff4757);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            box-shadow: 0 2px 8px rgba(255, 71, 87, 0.3);
+            animation: promoPulse 2s ease-in-out infinite;
+          }
+
+          .price-display {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+
+            .original-price {
+              color: #b8a9d1;
+              font-size: 1.5rem;
+              font-weight: 300;
+              text-decoration: line-through;
+              opacity: 0.7;
+            }
+
+            .promo-price {
+              color: #c084fc;
+              font-size: 2.2rem;
+              font-weight: 500;
+              text-shadow: 0 0 20px rgba(192, 132, 252, 0.3);
+            }
+          }
         }
 
         .package-duration {
@@ -308,6 +353,23 @@
 
           .package-price {
             font-size: 1.8rem;
+          }
+
+          .promotional-pricing {
+            .promo-badge {
+              font-size: 0.75rem;
+              padding: 0.2rem 0.6rem;
+            }
+
+            .price-display {
+              .original-price {
+                font-size: 1.2rem;
+              }
+
+              .promo-price {
+                font-size: 1.8rem;
+              }
+            }
           }
 
           .package-duration {
@@ -906,5 +968,17 @@
   }
   50% {
     transform: translateY(-4px);
+  }
+}
+
+// Promotional badge animation
+@keyframes promoPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 2px 8px rgba(255, 71, 87, 0.3);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(255, 71, 87, 0.5);
   }
 }

@@ -1,5 +1,6 @@
 @if (showNavigation()) {
   <app-navigation></app-navigation>
+  <app-promotional-banner></app-promotional-banner>
 }
 <div class="route-container" [@routeAnimations]="outlet.isActivated ? outlet.activatedRoute : null">
   <router-outlet #outlet="outlet" />

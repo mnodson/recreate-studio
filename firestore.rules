@@ -41,6 +41,17 @@ service cloud.firestore {
       allow get, list: if resource.data.isVisible == true;
     }
 
+    // Promotions Collection
+    // - Anyone can read (to display active promotions on packages page)
+    // - Only authenticated users (admins) can create, update, or delete
+    match /promotions/{promotionId} {
+      // Anyone can read promotions
+      allow read: if true;
+
+      // Only authenticated users (admins) can create, update, or delete
+      allow create, update, delete: if request.auth != null;
+    }
+
     // Default deny all other collections
     match /{document=**} {
       allow read, write: if false;
