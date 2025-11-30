@@ -19,8 +19,8 @@ import { Promotion } from '../models/promotion.model';
             <div class="promo-image-right" [style.opacity]="hasCustomBackground() ? '0.08' : '0.15'"></div>
           </div>
           <div class="banner-content">
-            <div class="promo-badge" [style.background]="getBadgeGradient()">
-              <span class="badge-text">LIMITED TIME</span>
+            <div class="promo-badge">
+              <span class="badge-text" [style.background]="getBadgeGradient()">LIMITED TIME</span>
             </div>
             <div class="banner-text">
               <h2 class="promo-title" [innerHTML]="bannerPromotion.bannerText" [style.color]="getTextColor()"></h2>
@@ -122,7 +122,6 @@ import { Promotion } from '../models/promotion.model';
     .badge-text {
       display: inline-block;
       padding: 0.5rem 1.5rem;
-      background: linear-gradient(135deg, #ff6b6b, #ff4757);
       color: white;
       font-size: 0.75rem;
       font-weight: 700;
@@ -130,7 +129,6 @@ import { Promotion } from '../models/promotion.model';
       text-transform: uppercase;
       border-radius: 20px;
       box-shadow: 0 4px 15px rgba(255, 71, 87, 0.4);
-      animation: pulse 2s ease-in-out infinite;
     }
 
     .banner-text {
@@ -286,15 +284,6 @@ import { Promotion } from '../models/promotion.model';
       }
     }
 
-    @keyframes pulse {
-      0%, 100% {
-        transform: scale(1);
-      }
-      50% {
-        transform: scale(1.05);
-      }
-    }
-
     @media (max-width: 768px) {
       .promotional-banner-wrapper {
         padding: 1.5rem 0.5rem;
@@ -441,13 +430,8 @@ export class PromotionalBannerComponent implements OnInit {
   }
 
   getBadgeGradient(): string {
-    if (this.bannerPromotion?.bannerBackgroundColor) {
-      const color = this.bannerPromotion.bannerBackgroundColor;
-      // Create a vibrant gradient from the custom color
-      return `linear-gradient(135deg, ${this.adjustBrightness(color, 20)}, ${this.adjustBrightness(color, 30)})`;
-    }
-    // Default red badge gradient
-    return 'linear-gradient(135deg, #ff6b6b, #ff4757)';
+    // Return solid accent color
+    return '#ff4757';
   }
 
   getCtaGradient(): string {
