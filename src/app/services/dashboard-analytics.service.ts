@@ -222,16 +222,24 @@ export class DashboardAnalyticsService {
 
     // Gallery analytics
     const now = new Date();
-    const activeGalleries = galleries.filter(g => g.isActive && g.expiresAt > now).length;
+    const activeGalleries = galleries.filter(g => {
+      const expiresAt = g.expiresAt instanceof Date ? g.expiresAt : (g.expiresAt as any).toDate();
+      return g.isActive && expiresAt > now;
+    }).length;
     const totalGalleryViews = galleries.reduce((sum, g) => sum + (g.accessCount || 0), 0);
 
     // Calculate gallery views for current period (if lastAccessedAt is in range)
     const galleryViewsThisWeek = galleries
-      .filter(g => g.lastAccessedAt && this.isDateInRange(g.lastAccessedAt, dateRange))
+      .filter(g => {
+        if (!g.lastAccessedAt) return false;
+        const lastAccessedAt = g.lastAccessedAt instanceof Date ? g.lastAccessedAt : (g.lastAccessedAt as any).toDate();
+        return this.isDateInRange(lastAccessedAt, dateRange);
+      })
       .reduce((sum, g) => sum + (g.accessCount || 0), 0);
 
+      console.log(galleries)
     const topGalleries: GalleryStats[] = galleries
-      .filter(g => g.isActive && g.expiresAt > now && g.accessCount && g.accessCount > 0)
+      .filter(g => g.isActive && g.accessCount && g.accessCount > 0)
       .sort((a, b) => (b.accessCount || 0) - (a.accessCount || 0))
       .slice(0, 10)
       .map(g => ({
@@ -239,10 +247,12 @@ export class DashboardAnalyticsService {
         title: g.title,
         clientName: g.clientName,
         views: g.accessCount || 0,
-        lastAccessed: g.lastAccessedAt,
+        lastAccessed: g.lastAccessedAt ? (g.lastAccessedAt instanceof Date ? g.lastAccessedAt : (g.lastAccessedAt as any).toDate()) : undefined,
         imageCount: g.imageUrls?.length || 0,
-        createdAt: g.createdAt
+        createdAt: g.createdAt instanceof Date ? g.createdAt : (g.createdAt as any).toDate()
       }));
+
+      console.log('top galleries', topGalleries)
 
     // Filter promotions that are actually active and within date range
     const activePromotionsNow = promotions.filter(promo => {
