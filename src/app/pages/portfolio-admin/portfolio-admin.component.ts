@@ -8,6 +8,7 @@ import { GithubUploadService, UploadResult } from '../../services/github-upload.
 import { AuthService } from '../../services/auth.service';
 import { AnalyticsService } from '../../services/analytics.service';
 import { ContactMessageService } from '../../services/contact-message.service';
+import { AdminSubnavComponent } from '../../components/admin-subnav.component';
 import {
   PortfolioImage,
   PortfolioCategory,
@@ -26,8 +27,9 @@ interface CategoryDisplay {
 @Component({
   selector: 'app-portfolio-admin',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AdminSubnavComponent],
   template: `
+    <app-admin-subnav></app-admin-subnav>
     <div class="admin-container">
       <header class="admin-header">
         <div class="header-left">
@@ -37,40 +39,6 @@ interface CategoryDisplay {
               <span class="user-email">{{ authService.currentUser()!.email }}</span>
             </div>
           }
-        </div>
-        <div class="header-actions">
-          <button class="btn-secondary" (click)="navigateToGalleryAdmin()">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-              <polyline points="9 22 9 12 15 12 15 22"></polyline>
-            </svg>
-            Client Galleries
-          </button>
-          <button class="btn-secondary messages-btn" (click)="navigateToMessageCenter()">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-              <polyline points="22,6 12,13 2,6"></polyline>
-            </svg>
-            Messages
-            @if (unreadMessageCount() > 0) {
-              <span class="message-badge">{{ unreadMessageCount() }}</span>
-            }
-          </button>
-          <button class="btn-secondary" (click)="navigateToPromotionAdmin()">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
-              <line x1="7" y1="7" x2="7.01" y2="7"></line>
-            </svg>
-            Promotions
-          </button>
-          <button class="btn-secondary" (click)="logout()">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-              <polyline points="16 17 21 12 16 7"></polyline>
-              <line x1="21" y1="12" x2="9" y2="12"></line>
-            </svg>
-            Logout
-          </button>
         </div>
       </header>
 

@@ -4,11 +4,12 @@ import { Router } from '@angular/router';
 import { ContactMessageService, ContactMessage } from '../../services/contact-message.service';
 import { AnalyticsService } from '../../services/analytics.service';
 import { AuthService } from '../../services/auth.service';
+import { AdminSubnavComponent } from '../../components/admin-subnav.component';
 
 @Component({
   selector: 'app-message-center',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, AdminSubnavComponent],
   templateUrl: './message-center.html',
   styleUrls: ['./message-center.scss']
 })

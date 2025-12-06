@@ -9,6 +9,7 @@ import { GithubUploadService } from '../../services/github-upload.service';
 import { AuthService } from '../../services/auth.service';
 import { AnalyticsService } from '../../services/analytics.service';
 import { ContactMessageService } from '../../services/contact-message.service';
+import { AdminSubnavComponent } from '../../components/admin-subnav.component';
 import {
   PersonalGallery,
   GalleryStats,
@@ -18,8 +19,9 @@ import {
 @Component({
   selector: 'app-gallery-admin',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AdminSubnavComponent],
   template: `
+    <app-admin-subnav></app-admin-subnav>
     <div class="admin-container">
       <header class="admin-header">
         <div class="header-left">
@@ -33,39 +35,6 @@ import {
         <div class="header-actions">
           <button class="btn-primary" (click)="toggleCreateForm()">
             {{ showCreateForm() ? 'Cancel' : 'Create New Gallery' }}
-          </button>
-          <button class="btn-secondary" (click)="navigateToPortfolioAdmin()">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-              <circle cx="8.5" cy="8.5" r="1.5"></circle>
-              <polyline points="21 15 16 10 5 21"></polyline>
-            </svg>
-            Portfolio Images
-          </button>
-          <button class="btn-secondary messages-btn" (click)="navigateToMessageCenter()">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-              <polyline points="22,6 12,13 2,6"></polyline>
-            </svg>
-            Messages
-            @if (unreadMessageCount() > 0) {
-              <span class="message-badge">{{ unreadMessageCount() }}</span>
-            }
-          </button>
-          <button class="btn-secondary" (click)="navigateToPromotionAdmin()">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
-              <line x1="7" y1="7" x2="7.01" y2="7"></line>
-            </svg>
-            Promotions
-          </button>
-          <button class="btn-secondary" (click)="logout()">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-              <polyline points="16 17 21 12 16 7"></polyline>
-              <line x1="21" y1="12" x2="9" y2="12"></line>
-            </svg>
-            Logout
           </button>
         </div>
       </header>

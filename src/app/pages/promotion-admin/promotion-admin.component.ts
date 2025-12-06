@@ -6,11 +6,12 @@ import { PromotionService } from '../../services/promotion.service';
 import { AnalyticsService } from '../../services/analytics.service';
 import { AuthService } from '../../services/auth.service';
 import { Promotion } from '../../models/promotion.model';
+import { AdminSubnavComponent } from '../../components/admin-subnav.component';
 
 @Component({
   selector: 'app-promotion-admin',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AdminSubnavComponent],
   templateUrl: './promotion-admin.component.html',
   styleUrl: './promotion-admin.component.scss'
 })
@@ -314,6 +315,10 @@ export class PromotionAdminComponent implements OnInit {
 
   navigateToMessageCenter(): void {
     this.router.navigate(['/message-center']);
+  }
+
+  navigateToAnalyticsDashboard(): void {
+    this.router.navigate(['/analytics-dashboard']);
   }
 }
 
