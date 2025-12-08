@@ -99,7 +99,7 @@ import { PersonalGallery } from '../../models/gallery.model';
           <!-- Masonry Grid -->
           @if (galleryImagesForMasonry().length > 0 && !generatingThumbnails()) {
             <div class="masonry-grid">
-              @for (imageUrl of galleryImagesForMasonry(); track imageUrl; let i = $index) {
+              @for (imageUrl of getVisibleImages(); track imageUrl; let i = $index) {
                 <div
                   class="masonry-item"
                   [class.loaded]="isImageLoaded(i)"
@@ -151,6 +151,16 @@ import { PersonalGallery } from '../../models/gallery.model';
                 </div>
               }
             </div>
+
+            <!-- Load More Button -->
+            @if (hasMoreImages()) {
+              <div class="load-more-container">
+                <button class="btn-load-more" (click)="loadMoreImages()">
+                  Load More Images
+                  <span class="image-count">({{ displayedImageCount() }} of {{ galleryImagesForMasonry().length }})</span>
+                </button>
+              </div>
+            }
           }
 
           <!-- Lightbox -->
@@ -505,6 +515,10 @@ export class SharedGalleryComponent implements OnInit, OnDestroy {
   // Gallery images (all images for masonry grid)
   galleryImagesForMasonry = signal<string[]>([]);
 
+  // Pagination state
+  imagesPerPage = 20; // Load 20 images at a time
+  displayedImageCount = signal(20); // Start with first 20 images
+
   // Expose Array for template use
   Array = Array;
 
@@ -816,6 +830,29 @@ export class SharedGalleryComponent implements OnInit, OnDestroy {
       console.error('Original image also failed to load:', originalUrl);
       this.analytics.trackImageError(relativeUrl, 'image_load_failed');
     }
+  }
+
+  // Pagination methods
+  getVisibleImages(): string[] {
+    return this.galleryImagesForMasonry().slice(0, this.displayedImageCount());
+  }
+
+  hasMoreImages(): boolean {
+    return this.displayedImageCount() < this.galleryImagesForMasonry().length;
+  }
+
+  loadMoreImages(): void {
+    const currentCount = this.displayedImageCount();
+    const totalImages = this.galleryImagesForMasonry().length;
+    const newCount = Math.min(currentCount + this.imagesPerPage, totalImages);
+    this.displayedImageCount.set(newCount);
+
+    // Track pagination
+    this.analytics.trackCustomEvent('gallery_load_more', {
+      previousCount: currentCount,
+      newCount: newCount,
+      totalImages: totalImages
+    });
   }
 
   // Client selection methods
