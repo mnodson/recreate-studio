@@ -612,8 +612,8 @@ export class SharedGalleryComponent implements OnInit, OnDestroy {
     // Set remaining images for masonry grid (all images, hero will be in the grid too for simplicity)
     this.galleryImagesForMasonry.set(gallery.imageUrls);
 
-    // Generate thumbnails for masonry grid
-    this.generateThumbnails();
+    // Skip thumbnail generation - use webp images directly for faster loading
+    // this.generateThumbnails();
   }
 
   private isImageLandscape(imageUrl: string): Promise<boolean> {
