@@ -329,6 +329,7 @@ export class PackagesComponent implements OnInit {
         'Online gallery for sharing'
       ],
       popular: false,
+      additionalInfo: 'This package is tailored for up to 5 people so we can give everyone proper attention within the session time. Larger groups? Ask about our Premium package.'
     },
     {
       id: 4,
@@ -343,8 +344,7 @@ export class PackagesComponent implements OnInit {
         '40 edited high-resolution images',
         'Private online gallery',
       ],
-      popular: false,
-      additionalInfo: 'Bring friends for group shots'
+      popular: false
     },
     {
       id: 5,
